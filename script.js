@@ -3,7 +3,7 @@ let selectedTransport = "";
 let history = [];
 let points = 0;
 let watchId = null;
-let positions = [];
+let positions = [];// 位置追蹤
 let map, directionsService, directionsRenderer;
 let startMarker = null, endMarker = null;
 let currentDistance = 0; // 即時追蹤距離
