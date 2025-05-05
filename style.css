@@ -1,0 +1,115 @@
+.transport-btn.active {
+    background-color: #90ee90;;
+    color: rgb(255, 255, 255);
+  }
+  body {
+    background-color:  #000000;
+    color: #e0e0e0;
+  }
+  
+  .card {
+    background-color: #1e1e1e;
+    border: 1px solid #2a2a2a;
+    color: #ffffff;
+  }
+  
+  .card-title {
+    color: #90ee90; /* 淡綠色文字，突顯標題 */
+  }
+  
+  .form-control {
+    background-color: #2b2b2b;
+    color: #ffffff;
+    border: 1px solid #444;
+  }
+  
+  .form-control::placeholder {
+    color: #aaa;
+  }
+  
+  .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+  }
+  
+  .btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+  }
+  
+  .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #5c636a;
+    border-color: #565e64;
+  }
+  
+  .btn-success {
+    background-color: #198754;
+    border-color: #198754;
+  }
+  
+  .btn-success:hover {
+    background-color: #157347;
+    border-color: #146c43;
+  }
+  
+  .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+  }
+  
+  .btn-danger:hover {
+    background-color: #bb2d3b;
+    border-color: #b02a37;
+  }
+  
+  .alert-success {
+    background-color: #1f513f;
+    border-color: #14532d;
+    color: #d1e7dd;
+  }
+  .card-body{
+    background-color: #000000;
+  }
+  
+  .table {
+    color: #000000;
+  }
+  
+  .table th,
+  .table td {
+    border-color: #8d8d8d;
+  }
+  
+  .list-group-item {
+    background-color: #2b2b2b;
+    color: #fff;
+    border: 1px solid #444;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #4caf50;
+    font-size: 18px;
+    border: 2px solid #ffffff44;
+  }
+
+  .user-info-box {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #1e1e1e;
+    padding: 10px 15px;
+    border-radius: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    z-index: 1000;
+  }
+  
+
+  
+  
