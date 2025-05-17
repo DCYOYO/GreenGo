@@ -27,7 +27,12 @@ if (!isset($_SESSION['user_id'])) {
   </div>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-      <a class="navbar-brand" href="tracking.php">GreenGo</a>
+      <div>
+      <h1 class="mb-4 text-success-emphasis fw-bold">
+        <i class="bi bi-leaf" style="color: #90ee90;">GreenGo </i>
+        <i class="bi bi-leaf" style="color:rgb(200, 255, 200);font-size:19px;">讓環保充斥在你我生活之間</i>
+      </h1>
+    </div>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -42,12 +47,6 @@ if (!isset($_SESSION['user_id'])) {
     </div>
   </nav>
   <div class="container py-5">
-    <div>
-      <h1 class="mb-4 text-success-emphasis fw-bold">
-        <i class="bi bi-leaf" style="color: #90ee90;">GreenGo </i>
-        <i class="bi bi-leaf" style="color:rgb(200, 255, 200);font-size:19px;">讓環保充斥在你我生活之間</i>
-      </h1>
-    </div>
     <div id="leaderboard-section" class="card mb-4" style="border-radius: 15px;">
       <div class="card-body" style="border-radius: 15px;">
         <h5 class="card-title">排行榜</h5>
