@@ -53,19 +53,12 @@ foreach($records as &$record){
   </div>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-<<<<<<< HEAD
     <button onclick="location.href='/tracking'" class="btn btn-link text-decoration-none">
       <h1 class="mb-4 text-success-emphasis fw-bold" >
         <i class="bi bi-leaf" style="color: #90ee90;">GreenGo </i>
         <i class="bi bi-leaf" style="color:rgb(200, 255, 200);font-size:19px;">讓環保充斥在你我生活之間</i>
       </h1>
     </button>
-=======
-      <h1 class="mb-4 text-success-emphasis fw-bold">
-        <i class="bi bi-leaf" style="color: #90ee90;">GreenGo </i>
-        <i class="bi bi-leaf" style="color:rgb(200, 255, 200);font-size:19px;">讓環保充斥在你我生活之間</i>
-      </h1>
->>>>>>> 7ce18f6f9a004ccd73d3265efcbc5a966c28565f
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
