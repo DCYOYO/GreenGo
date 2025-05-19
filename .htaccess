@@ -1,12 +1,5 @@
 RewriteEngine On
 RewriteBase /
-
-# 如果請求是目錄或檔案，直接訪問
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
-
-# 將所有請求重寫到 index.php 或對應頁面
-RewriteRule ^$ index.php [L]
-RewriteRule ^(tracking|history|leaderboard|rewards)/?$ pages/$1.php [L]
-RewriteRule ^api/(.*)$ api/$1 [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.php [L]

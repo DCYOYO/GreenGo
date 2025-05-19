@@ -1,40 +1,38 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Cache-Control: no-cache, no-store, must-revalidate');
-header('Pragma: no-cache');
-header('Expires: 0');
-header('Content-Type: application/json');
 session_start();
 
+// 資料庫連接配置（請根據你的環境更新）
 $host = 'localhost';
 $dbname = 'carbon_tracker';
-$username = 'root';
-$password = '';
+$username = 'root'; // 替換為你的資料庫用戶名
+$password = ''; // 替換為你的資料庫密碼
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    echo json_encode(['status' => 'error', 'message' => '資料庫連接失敗: ' . $e->getMessage()]);
+    $_SESSION['error'] = '資料庫連接失敗: ' . $e->getMessage();
+    header('Location: ' . $_SERVER['HTTP_REFERER'] ?: '/');
     exit;
 }
 
-// 解析 JSON 請求體
-$data = json_decode(file_get_contents('php://input'), true);
-
-// 優先從 JSON 數據中獲取 action，如果不存在則檢查 GET 和 POST
-$action = isset($data['action']) ? $data['action'] : (isset($_GET['action']) ? $_GET['action'] : (isset($_POST['action']) ? $_POST['action'] : ''));
+if (empty($_POST)) {
+    $rawData = file_get_contents('php://input');
+    $jsonData = json_decode($rawData, true);
+    if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)) {
+        $_POST = $jsonData;
+    }
+}
+$action = isset($_POST['action']) ? $_POST['action'] : '';
 
 switch ($action) {
     case 'login':
-        $username = trim($data['username'] ?? '');
-        $password = $data['password'] ?? '';
+        $username = trim($_POST['username'] ?? '');
+        $password = $_POST['password'] ?? '';
 
         if (empty($username) || empty($password)) {
-            echo json_encode(['status' => 'error', 'message' => '請輸入用戶名和密碼']);
+            $_SESSION['error'] = '請輸入用戶名和密碼';
+            header('Location: /');
             exit;
         }
 
@@ -45,30 +43,45 @@ switch ($action) {
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
-            echo json_encode(['status' => 'success', 'message' => '登入成功']);
+            $_SERVER['REQUEST_URI']="/tracking";
+            echo "Login successful, Session ID: " . session_id() . ", user_id: " . $_SESSION['user_id'] . ", redirecting to /tracking<br>";
+            session_write_close();
+            header('Location: /tracking');
+            exit;
         } else {
-            echo json_encode(['status' => 'error', 'message' => '用戶名或密碼錯誤']);
+            $_SESSION['error'] = '用戶名或密碼錯誤';
+            header('Location: /');
+            exit;
         }
         break;
-
     case 'register':
-        $username = trim($data['username'] ?? '');
-        $password = $data['password'] ?? '';
+        $username = trim($_POST['username'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $password_confirm = $_POST['password_confirm'] ?? '';
 
-        if (empty($username) || empty($password)) {
-            echo json_encode(['status' => 'error', 'message' => '請輸入用戶名和密碼']);
+        if (empty($username) || empty($password) || empty($password_confirm)) {
+            $_SESSION['error'] = '請填寫所有欄位';
+            header('Location: /register');
+            exit;
+        }
+
+        if ($password !== $password_confirm) {
+            $_SESSION['error'] = '密碼不一致';
+            header('Location: /register');
             exit;
         }
 
         if (strlen($username) < 3) {
-            echo json_encode(['status' => 'error', 'message' => '用戶名需至少3個字符']);
+            $_SESSION['error'] = '用戶名需至少3個字符';
+            header('Location: /register');
             exit;
         }
 
         $stmt = $pdo->prepare('SELECT id FROM users WHERE username = ?');
         $stmt->execute([$username]);
         if ($stmt->fetch()) {
-            echo json_encode(['status' => 'error', 'message' => '用戶名已存在']);
+            $_SESSION['error'] = '用戶名已存在';
+            header('Location: /register');
             exit;
         }
 
@@ -76,42 +89,51 @@ switch ($action) {
         $stmt = $pdo->prepare('INSERT INTO users (username, password, total_points, total_footprint) VALUES (?, ?, 0, 0)');
         try {
             $stmt->execute([$username, $hashed_password]);
-            echo json_encode(['status' => 'success', 'message' => '註冊成功']);
+            $_SESSION['error'] = '註冊成功，請登入';
+            header('Location: /');
         } catch (PDOException $e) {
-            echo json_encode(['status' => 'error', 'message' => '註冊失敗: ' . $e->getMessage()]);
+            $_SESSION['error'] = '註冊失敗: ' . $e->getMessage();
+            header('Location: /register');
         }
         break;
 
     case 'logout':
-        // 為了兼容原始設計，僅返回成功響應，前端負責處理登出邏輯
-        // 如果需要清除 PHP 會話，可以取消以下註釋
         session_unset();
         session_destroy();
-        echo json_encode(['status' => 'success', 'message' => '登出成功']);
-        break;
-
-    case 'check_login':
-        if (isset($_SESSION['user_id'])) {
-            echo json_encode(['status' => 'success', 'username' => $_SESSION['username']]);
-        } else {
-            echo json_encode(['status' => 'error', 'message' => '未登入']);
-        }
+        header('Location: /');
         break;
 
     case 'record':
         if (!isset($_SESSION['user_id'])) {
-            echo json_encode(['status' => 'error', 'message' => '請先登入']);
+            header('Location: /');
             exit;
         }
 
-        $transport = $data['transport'] ?? '';
-        $distance = floatval($data['distance'] ?? 0);
-        $footprint = floatval($data['footprint'] ?? 0);
-        $points = intval($data['points'] ?? 0);
+        $transport = $_POST['transport'] ?? '';
+        $distance = floatval($_POST['distance'] ?? 0);
 
         if (empty($transport) || $distance <= 0) {
-            echo json_encode(['status' => 'error', 'message' => '無效的交通方式或距離']);
+            $_SESSION['error'] = '無效的交通方式或距離';
+            header('Location: /tracking');
             exit;
+        }
+
+        $factors = [
+            "步行" => 0,
+            "腳踏車" => 0,
+            "機車" => 0.079,
+            "汽車" => 0.104,
+            "大眾運輸" => 0.078
+        ];
+        $footprint = $distance * ($factors[$transport] ?? 0);
+
+        $points = 0;
+        if ($transport === "步行") {
+            $points = floor($distance / 0.5);
+        } else if ($transport === "腳踏車") {
+            $points = floor($distance / 1);
+        } else if ($transport === "大眾運輸") {
+            $points = floor($distance / 5);
         }
 
         $stmt = $pdo->prepare('INSERT INTO travel_records (user_id, transport, distance, footprint, points) VALUES (?, ?, ?, ?, ?)');
@@ -119,48 +141,17 @@ switch ($action) {
             $stmt->execute([$_SESSION['user_id'], $transport, $distance, $footprint, $points]);
             $stmt = $pdo->prepare('UPDATE users SET total_points = total_points + ?, total_footprint = total_footprint + ? WHERE id = ?');
             $stmt->execute([$points, $footprint, $_SESSION['user_id']]);
-            echo json_encode(['status' => 'success', 'message' => '記錄已儲存']);
+            echo json_encode([
+            'status' => "success",
+            'message' => '紀錄成功',
+            'points' => $points,
+            'footprint' => $footprint
+            ]);
+            //header('Location: /tracking');
         } catch (PDOException $e) {
-            echo json_encode(['status' => 'error', 'message' => '儲存記錄失敗: ' . $e->getMessage()]);
+            $_SESSION['error'] = '儲存記錄失敗: ' . $e->getMessage();
+            header('Location: /tracking');
         }
-        break;
-
-    case 'history':
-        if (!isset($_SESSION['user_id'])) {
-            echo json_encode(['status' => 'error', 'message' => '請先登入']);
-            exit;
-        }
-
-        $stmt = $pdo->prepare('SELECT transport, distance, footprint, points, record_time FROM travel_records WHERE user_id = ? ORDER BY record_time DESC');
-        $stmt->execute([$_SESSION['user_id']]);
-        $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($records);
-        break;
-
-    case 'user_points':
-        if (!isset($_SESSION['user_id'])) {
-            echo json_encode(['status' => 'error', 'message' => '請先登入']);
-            exit;
-        }
-
-        $stmt = $pdo->prepare('SELECT total_points AS points FROM users WHERE id = ?');
-        $stmt->execute([$_SESSION['user_id']]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo json_encode(['status' => 'success', 'points' => $result['points']]);
-        break;
-
-    case 'leaderboard':
-        $stmt = $pdo->prepare('SELECT username, total_points, total_footprint FROM users ORDER BY total_points DESC, total_footprint ASC LIMIT 10');
-        $stmt->execute();
-        $leaderboard = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($leaderboard);
-        break;
-
-    case 'rewards':
-        $stmt = $pdo->prepare('SELECT id, name, points_required, description FROM rewards');
-        $stmt->execute();
-        $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($rewards);
         break;
 
     case 'redeem':
@@ -169,7 +160,7 @@ switch ($action) {
             exit;
         }
 
-        $reward_id = intval($data['reward_id'] ?? 0);
+        $reward_id = intval($_POST['reward_id'] ?? 0);
 
         $stmt = $pdo->prepare('SELECT name, points_required FROM rewards WHERE id = ?');
         $stmt->execute([$reward_id]);
@@ -206,7 +197,7 @@ switch ($action) {
         break;
 
     default:
-        echo json_encode(['status' => 'error', 'message' => '無效的操作']);
+        header('Location: ' . $_SERVER['HTTP_REFERER'] ?: '/');
         break;
 }
 ?>

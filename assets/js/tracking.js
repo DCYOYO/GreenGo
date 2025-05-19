@@ -8,10 +8,7 @@ let currentDistance = 0;
 let currentPoints = 0;
 
 window.onload = () => {
-  checkLoginStatus(() => {
-    setupTransportButtons();
-    document.getElementById('tracking-section').classList.remove('d-none');
-  });
+  setupTransportButtons();
 };
 
 function setupTransportButtons() {
@@ -46,7 +43,7 @@ function handleSubmit() {
   };
   history.unshift(record);
   console.log("發送資料：", record);
-  fetch('../api/backend.php', {
+  fetch('/api/backend.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -80,7 +77,9 @@ function handleSubmit() {
 }
 
 function startTracking() {
-  if (!selectedTransport) return alert("請先選擇交通方式。");
+  if (!selectedTransport){
+    return alert("請先選擇交通方式。");
+  } 
   positions = [];
   currentDistance = 0;
   currentPoints = 0;
@@ -128,7 +127,7 @@ function stopTracking() {
     };
     history.unshift(record);
     console.log("發送資料：", record);
-    fetch('../api/backend.php', {
+    fetch('/api/backend.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -209,7 +208,9 @@ function calculateRoute() {
       const route = result.routes[0].legs[0];
       const distanceKm = route.distance.value / 1000;
       document.getElementById("map-distance").textContent = `計算距離：${distanceKm.toFixed(2)} 公里`;
-      if (!selectedTransport) return alert("請先選擇交通方式");
+      if (!selectedTransport) {
+        return alert("請先選擇交通方式");
+      }
       const footprint = calculateFootprint(selectedTransport, distanceKm);
       const pointsEarned = calculatePoints(selectedTransport, distanceKm);
       const record = {
@@ -221,7 +222,7 @@ function calculateRoute() {
       };
       history.unshift(record);
       console.log("發送資料：", record);
-      fetch('../api/backend.php', {
+      fetch('/api/backend.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
