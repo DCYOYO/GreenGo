@@ -40,6 +40,13 @@ unset($_SESSION['error']);
                     <label for="login-password" class="form-label">密碼</label>
                     <input type="password" class="form-control" id="login-password" name="password" placeholder="輸入密碼" required>
                 </div>
+                <div class="mb-3">
+                      <label for="login-captcha" class="form-label">驗證碼</label>
+                      <div class="d-flex align-items-center">
+                          <input type="text" class="form-control me-2" id="login-captcha" name="captcha" placeholder="輸入驗證碼" required>
+                          <img src="/pages/captcha.php" alt="點擊刷新" id="captcha-image" style="cursor: pointer;" title="點擊刷新" onclick="this.src='/pages/captcha.php'">
+                      </div>
+                  </div>
                 <button type="submit" class="btn btn-primary w-100" id="login-btn">登入</button>
                 <?php if ($error): ?>
                     <div class="text-danger mt-2 text-center" id="login-error"><?php echo htmlspecialchars($error); ?></div>

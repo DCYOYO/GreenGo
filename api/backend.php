@@ -29,6 +29,13 @@ switch ($action) {
     case 'login':
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
+        $captcha = trim($_POST['captcha'] ?? ''); 
+
+        if (!isset($_SESSION['_authnum']) || md5($captcha) !== $_SESSION['_authnum']) {
+        $_SESSION['error'] = '驗證碼錯誤';
+        header('Location: /');
+        exit;
+        }
 
         if (empty($username) || empty($password)) {
             $_SESSION['error'] = '請輸入用戶名和密碼';
@@ -46,6 +53,7 @@ switch ($action) {
             $_SERVER['REQUEST_URI']="/tracking";
             echo "Login successful, Session ID: " . session_id() . ", user_id: " . $_SESSION['user_id'] . ", redirecting to /tracking<br>";
             session_write_close();
+            unset($_SESSION['_authnum']); // 登入成功後清除驗證碼
             header('Location: /tracking');
             exit;
         } else {

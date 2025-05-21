@@ -7,11 +7,11 @@ define('DEBUG_MODE', true); // 生產環境請改為 false
 // 可訪問的頁面定義
 $pages = [
     '' => 'pages/login.php',
-    'register' => 'pages/register.php',
     'tracking' => 'pages/tracking.php',
     'history' => 'pages/history.php',
     'leaderboard' => 'pages/leaderboard.php',
-    'rewards' => 'pages/rewards.php'
+    'rewards' => 'pages/rewards.php',
+    'captcha'=>'pages/captcha'
 ];
 
 // ====== 共用函式 ======
