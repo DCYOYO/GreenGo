@@ -1,6 +1,6 @@
 window.onload = () => {
     showLoginForm();
-    checkLoginStatus();
+    //checkLoginStatus();
 };
 
 function showLoginForm() {
