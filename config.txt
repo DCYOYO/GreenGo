@@ -1,0 +1,3 @@
+httpd.conf中找尋所有的 AllowOverride 的後面全部改成All
+php.ini中找到extension=gd 把前面的;去除掉來開啟功能
+網站就能正常顯示了
