@@ -9,22 +9,37 @@ try {
     $pdo = new PDO('mysql:host=localhost;dbname=carbon_tracker;charset=utf8mb4', 'root', '');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
+    error_log('Database connection failed: ' . $e->getMessage());
+    header('Content-Type: application/json; charset=UTF-8');
     echo json_encode(['error' => '資料庫連線失敗：' . htmlspecialchars($e->getMessage())]);
     exit;
 }
 
 // 處理圖像上傳
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture']) && isset($_SESSION['username'])) {
+    header('Content-Type: application/json; charset=UTF-8');
     $username = $_SESSION['username'];
-    $upload_dir = 'uploads/';
+    $upload_dir = 'Uploads/';
     $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
     $max_size = 5 * 1024 * 1024; // 5MB
 
     if (!is_dir($upload_dir)) {
-        mkdir($upload_dir, 0755, true);
+        if (!mkdir($upload_dir, 0755, true)) {
+            error_log('Failed to create upload directory: ' . $upload_dir);
+            echo json_encode(['error' => '無法創建上傳目錄，請檢查伺服器權限。']);
+            exit;
+        }
+    }
+
+    if (!is_writable($upload_dir)) {
+        error_log('Upload directory is not writable: ' . $upload_dir);
+        echo json_encode(['error' => '上傳目錄不可寫，請檢查伺服器權限。']);
+        exit;
     }
 
     $file = $_FILES['profile_picture'];
+    error_log('File upload attempt: ' . json_encode($file));
+
     if ($file['error'] === UPLOAD_ERR_OK && in_array($file['type'], $allowed_types) && $file['size'] <= $max_size) {
         $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
         $new_filename = $username . '_' . time() . '.' . $ext;
@@ -35,19 +50,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture']) &
             $stmt = $pdo->prepare($sql);
             $stmt->execute(['profile_picture' => $destination, 'username' => $username]);
             echo json_encode(['success' => '頭像上傳成功！', 'profile_picture' => $destination]);
-            exit;
         } else {
+            error_log('Failed to move uploaded file to: ' . $destination);
             echo json_encode(['error' => '頭像上傳失敗，請稍後再試。']);
-            exit;
         }
     } else {
-        echo json_encode(['error' => '無效的檔案格式或檔案過大（上限 5MB）。']);
-        exit;
+        $error_msg = '無效的檔案格式或檔案過大（上限 5MB）。';
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            $error_msg = '檔案上傳錯誤，代碼：' . $file['error'];
+        }
+        error_log('File upload error: ' . $error_msg);
+        echo json_encode(['error' => $error_msg]);
     }
+    exit;
 }
 
 // 處理個人資料編輯
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_profile']) && isset($_SESSION['username'])) {
+    header('Content-Type: application/json; charset=UTF-8');
     $username = $_SESSION['username'];
     $bio = trim($_POST['bio'] ?? '');
     $country_code = trim($_POST['country_code'] ?? '');
@@ -55,6 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_profile']) && is
     $gender = in_array($_POST['gender'] ?? '', ['M', 'F', 'Other']) ? $_POST['gender'] : null;
     $birthdate = trim($_POST['birthdate'] ?? '');
     $activity_level = in_array($_POST['activity_level'] ?? '', ['Low', 'Medium', 'High']) ? $_POST['activity_level'] : null;
+
+    error_log('Updating profile for user: ' . $username . ', data: ' . json_encode($_POST));
 
     $sql = "UPDATE personal_page SET bio = :bio, country_code = :country_code, city = :city, gender = :gender, birthdate = :birthdate, activity_level = :activity_level WHERE username = :username";
     $stmt = $pdo->prepare($sql);
@@ -71,9 +93,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_profile']) && is
     exit;
 }
 
-// 查詢個人主頁
+// 查詢個人主頁 (僅在 GET 請求中渲染 HTML)
 $user = null;
-if (isset($_GET['username']) && !empty(trim($_GET['username']))) {
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['username']) && !empty(trim($_GET['username']))) {
     $username = trim($_GET['username']);
     $sql = "SELECT pp.*, u.total_points, u.total_footprint 
             FROM personal_page pp 
@@ -83,7 +105,6 @@ if (isset($_GET['username']) && !empty(trim($_GET['username']))) {
     $stmt->execute(['username' => $username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // 添加日誌以確認查詢的用戶
     error_log('Queried username: ' . ($user ? $user['username'] : 'Not found'));
     error_log('Session matches user: ' . (isset($_SESSION['username']) && $user && $_SESSION['username'] === $user['username'] ? 'Yes' : 'No'));
 }
@@ -128,8 +149,7 @@ if (isset($_GET['username']) && !empty(trim($_GET['username']))) {
             <div class="card mb-4">
                 <div class="card-body">
                     <p><strong>簡介：</strong> <span id="bio"><?php echo htmlspecialchars($user['bio'] ?? '未設定'); ?></span></p>
-                    <p><strong>國家代碼：</strong> <span id="country_code"><?php echo htmlspecialchars($user['country_code'] ?? '未設定'); ?></span></p>
-                    <p><strong>城市：</strong> <span id="city"><?php echo htmlspecialchars($user['city'] ?? '未設定'); ?></span></p>
+                    <p><strong>國家：</strong> <span id="country_code"><?php echo htmlspecialchars($user['country_code'] ?? '未設定'); ?></span></p>
                     <p><strong>性別：</strong> <span id="gender"><?php echo htmlspecialchars($user['gender'] === 'M' ? '男' : ($user['gender'] === 'F' ? '女' : ($user['gender'] === 'Other' ? '其他' : '未設定'))); ?></span></p>
                     <p><strong>生日：</strong> <span id="birthdate"><?php echo htmlspecialchars($user['birthdate'] ?? '未設定'); ?></span></p>
                     <p><strong>活躍程度：</strong> <span id="activity_level"><?php echo htmlspecialchars($user['activity_level'] ?? '未設定'); ?></span></p>
@@ -137,11 +157,9 @@ if (isset($_GET['username']) && !empty(trim($_GET['username']))) {
                 </div>
             </div>
 
-            <!-- 始終顯示按鈕，但表單受會話控制 -->
             <button class="btn btn-outline-secondary mb-3 me-2" id="upload-toggle-btn">上傳頭像</button>
             <button class="btn btn-outline-secondary mb-3" id="edit-toggle-btn">編輯個人資料</button>
 
-            <!-- 圖像上傳表單 -->
             <div class="card mb-4" style="display: none;">
                 <div class="card-body">
                     <h3>上傳頭像</h3>
@@ -159,7 +177,6 @@ if (isset($_GET['username']) && !empty(trim($_GET['username']))) {
                 </div>
             </div>
 
-            <!-- 編輯個人資料表單 -->
             <div class="card mb-4" style="display: none;">
                 <div class="card-body">
                     <h3>編輯個人資料</h3>
@@ -170,18 +187,12 @@ if (isset($_GET['username']) && !empty(trim($_GET['username']))) {
                             <textarea class="form-control" name="bio" id="bio" rows="3" placeholder="輸入你的自我介紹..."><?php echo htmlspecialchars($user['bio'] ?? ''); ?></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="country_code" class="form-label fw-bold">國家代碼</label>
+                            <label for="country_code" class="form-label fw-bold">國家</label>
                             <select id="country_code" name="country_code" class="form-select" required>
                                 <option value="">請選擇國家</option>
                                 <option value="TW" <?php echo ($user['country_code'] === 'TW') ? 'selected' : ''; ?>>台灣</option>
                                 <option value="US" <?php echo ($user['country_code'] === 'US') ? 'selected' : ''; ?>>美國</option>
                                 <option value="JP" <?php echo ($user['country_code'] === 'JP') ? 'selected' : ''; ?>>日本</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="city" class="form-label fw-bold">城市</label>
-                            <select id="city" name="city" class="form-select" required data-selected="<?php echo htmlspecialchars($user['city'] ?? ''); ?>">
-                                <option value="">請先選擇國家</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -196,15 +207,6 @@ if (isset($_GET['username']) && !empty(trim($_GET['username']))) {
                         <div class="mb-3">
                             <label for="birthdate" class="form-label fw-bold">生日</label>
                             <input type="date" class="form-control" name="birthdate" id="birthdate" value="<?php echo htmlspecialchars($user['birthdate'] ?? ''); ?>">
-                        </div>
-                        <div class="mb-3">
-                            <label for="activity_level" class="form-label fw-bold">活躍程度</label>
-                            <select class="form-select" name="activity_level" id="activity_level">
-                                <option value="" <?php echo empty($user['activity_level']) ? 'selected' : ''; ?>>不公開</option>
-                                <option value="Low" <?php echo ($user['activity_level'] === 'Low') ? 'selected' : ''; ?>>低</option>
-                                <option value="Medium" <?php echo ($user['activity_level'] === 'Medium') ? 'selected' : ''; ?>>中</option>
-                                <option value="High" <?php echo ($user['activity_level'] === 'High') ? 'selected' : ''; ?>>高</option>
-                            </select>
                         </div>
                         <input type="hidden" name="edit_profile" value="1">
                         <button type="submit" class="btn btn-success w-100 mt-3">儲存變更</button>
