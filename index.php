@@ -31,7 +31,7 @@ function safe_output($string) {
 
 function debug_log($message) {
     if (DEBUG_MODE) {
-        error_log("Debug: $message", 3, __DIR__ . '/logs/debug.log');
+        error_log("Debug: $message\n", 3, __DIR__ . '/logs/debug.log');
     }
 }
 
