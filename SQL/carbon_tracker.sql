@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2025-05-28 09:15:41
+-- 產生時間： 2025-05-28 09:21:37
 -- 伺服器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -20,6 +20,8 @@ SET time_zone = "+00:00";
 --
 -- 資料庫： `carbon_tracker`
 --
+CREATE DATABASE IF NOT EXISTS `carbon_tracker` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `carbon_tracker`;
 
 -- --------------------------------------------------------
 
@@ -27,6 +29,7 @@ SET time_zone = "+00:00";
 -- 資料表結構 `personal_page`
 --
 
+DROP TABLE IF EXISTS `personal_page`;
 CREATE TABLE `personal_page` (
   `id` int(11) NOT NULL COMMENT '主鍵 ID',
   `username` varchar(50) NOT NULL COMMENT '關聯的使用者名稱',
@@ -54,6 +57,7 @@ INSERT INTO `personal_page` (`id`, `username`, `bio`, `profile_picture`, `countr
 -- 資料表結構 `redeem_history`
 --
 
+DROP TABLE IF EXISTS `redeem_history`;
 CREATE TABLE `redeem_history` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -76,6 +80,7 @@ INSERT INTO `redeem_history` (`id`, `user_id`, `reward_id`, `reward_name`, `poin
 -- 資料表結構 `rewards`
 --
 
+DROP TABLE IF EXISTS `rewards`;
 CREATE TABLE `rewards` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
@@ -101,6 +106,7 @@ INSERT INTO `rewards` (`id`, `name`, `points_required`, `description`) VALUES
 -- 資料表結構 `travel_records`
 --
 
+DROP TABLE IF EXISTS `travel_records`;
 CREATE TABLE `travel_records` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -125,6 +131,7 @@ INSERT INTO `travel_records` (`id`, `user_id`, `transport`, `distance`, `footpri
 -- 資料表結構 `users`
 --
 
+DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL,
