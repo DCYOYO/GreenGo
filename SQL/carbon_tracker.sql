@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2025-05-05 18:06:01
--- 伺服器版本： 10.4.27-MariaDB
--- PHP 版本： 8.2.0
+-- 產生時間： 2025-05-28 09:15:41
+-- 伺服器版本： 10.4.32-MariaDB
+-- PHP 版本： 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -20,8 +20,33 @@ SET time_zone = "+00:00";
 --
 -- 資料庫： `carbon_tracker`
 --
-CREATE DATABASE IF NOT EXISTS `carbon_tracker` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `carbon_tracker`;
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `personal_page`
+--
+
+CREATE TABLE `personal_page` (
+  `id` int(11) NOT NULL COMMENT '主鍵 ID',
+  `username` varchar(50) NOT NULL COMMENT '關聯的使用者名稱',
+  `bio` text DEFAULT NULL COMMENT '個人簡介',
+  `profile_picture` varchar(255) DEFAULT NULL COMMENT '圖片路徑',
+  `country_code` char(2) DEFAULT NULL COMMENT '國家代碼',
+  `city` varchar(100) DEFAULT NULL COMMENT '城市',
+  `gender` enum('M','F','Other') DEFAULT NULL COMMENT '性別',
+  `birthdate` date DEFAULT NULL COMMENT '生日',
+  `activity_level` enum('Low','Medium','High') DEFAULT NULL COMMENT '活躍程度',
+  `created_at` datetime NOT NULL DEFAULT current_timestamp() COMMENT '建立時間',
+  `last_login` datetime DEFAULT NULL COMMENT '上次登入時間'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- 傾印資料表的資料 `personal_page`
+--
+
+INSERT INTO `personal_page` (`id`, `username`, `bio`, `profile_picture`, `country_code`, `city`, `gender`, `birthdate`, `activity_level`, `created_at`, `last_login`) VALUES
+(1, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-18 00:01:56', NULL);
 
 -- --------------------------------------------------------
 
@@ -120,6 +145,13 @@ INSERT INTO `users` (`id`, `username`, `password`, `total_points`, `total_footpr
 --
 
 --
+-- 資料表索引 `personal_page`
+--
+ALTER TABLE `personal_page`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `username` (`username`);
+
+--
 -- 資料表索引 `redeem_history`
 --
 ALTER TABLE `redeem_history`
@@ -152,6 +184,12 @@ ALTER TABLE `users`
 --
 
 --
+-- 使用資料表自動遞增(AUTO_INCREMENT) `personal_page`
+--
+ALTER TABLE `personal_page`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主鍵 ID', AUTO_INCREMENT=2;
+
+--
 -- 使用資料表自動遞增(AUTO_INCREMENT) `redeem_history`
 --
 ALTER TABLE `redeem_history`
@@ -178,6 +216,12 @@ ALTER TABLE `users`
 --
 -- 已傾印資料表的限制式
 --
+
+--
+-- 資料表的限制式 `personal_page`
+--
+ALTER TABLE `personal_page`
+  ADD CONSTRAINT `personal_page_ibfk_1` FOREIGN KEY (`username`) REFERENCES `users` (`username`) ON DELETE CASCADE;
 
 --
 -- 資料表的限制式 `redeem_history`
