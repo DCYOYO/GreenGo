@@ -1,113 +1,113 @@
-// 圖像預覽
-document.getElementById('profile_picture')?.addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    if (file && ['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const imgPreview = document.getElementById('image-preview');
-            imgPreview.src = e.target.result;
-            imgPreview.classList.remove('d-none');
-        };
-        reader.readAsDataURL(file);
-    } else {
-        const messageDiv = document.getElementById('upload-message');
-        messageDiv.className = 'alert alert-danger';
-        messageDiv.textContent = '請選擇有效的圖片格式（jpg, png, gif）。';
-        messageDiv.classList.remove('d-none');
-    }
-});
+document.addEventListener('DOMContentLoaded', function () {
+    const uploadToggleBtn = document.getElementById('upload-toggle-btn');
+    const editToggleBtn = document.getElementById('edit-toggle-btn');
+    const uploadCard = document.getElementById('upload-card');
+    const editCard = document.getElementById('edit-card');
+    const uploadForm = document.getElementById('upload-form');
+    const editForm = document.getElementById('edit-profile-form');
+    const uploadMessage = document.getElementById('upload-message');
+    const editMessage = document.getElementById('edit-message');
+    const profilePictureInput = document.getElementById('profile_picture');
+    const imagePreview = document.getElementById('image-preview');
 
-// 上傳頭像
-document.getElementById('upload-form')?.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
-
-    try {
-        const res = await fetch(window.location.href, {
-            method: 'POST',
-            body: formData
+    // 切換上傳表單顯示
+    if (uploadToggleBtn) {
+        uploadToggleBtn.addEventListener('click', function () {
+            uploadCard.classList.toggle('d-none');
+            editCard.classList.add('d-none');
         });
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        const contentType = res.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            const text = await res.text();
-            throw new Error('回應不是有效的 JSON: ' + text.substring(0, 50));
-        }
-        const result = await res.json();
-        const messageDiv = document.getElementById('upload-message');
-        if (result.success) {
-            messageDiv.className = 'alert alert-success';
-            messageDiv.textContent = result.success;
-            const profilePic = document.querySelector('#profile-picture-container img');
-            if (profilePic) {
-                profilePic.src = result.profile_picture + '?t=' + new Date().getTime();
+    }
+
+    // 切換編輯表單顯示
+    if (editToggleBtn) {
+        editToggleBtn.addEventListener('click', function () {
+            editCard.classList.toggle('d-none');
+            uploadCard.classList.add('d-none');
+        });
+    }
+
+    // 圖片預覽
+    if (profilePictureInput) {
+        profilePictureInput.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
             }
-        } else {
-            messageDiv.className = 'alert alert-danger';
-            messageDiv.textContent = result.error || '圖片上傳失敗，請稍後再試。';
-        }
-        messageDiv.classList.remove('d-none');
-    } catch (err) {
-        console.error('上傳錯誤：', err);
-        const messageDiv = document.getElementById('upload-message');
-        messageDiv.className = 'alert alert-danger';
-        messageDiv.textContent = '上傳過程中發生錯誤：' + err.message;
-        messageDiv.classList.remove('d-none');
-    }
-});
-
-// 編輯個人資料
-document.getElementById('edit-profile-form')?.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
-
-    try {
-        const res = await fetch(window.location.href, {
-            method: 'POST',
-            body: formData
         });
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        const contentType = res.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            const text = await res.text();
-            throw new Error('回應不是有效的 JSON: ' + text.substring(0, 50));
-        }
-        const result = await res.json();
-        const messageDiv = document.getElementById('edit-message');
-        if (result.success) {
-            messageDiv.className = 'alert alert-success';
-            messageDiv.textContent = result.success;
-        } else {
-            messageDiv.className = 'alert alert-danger';
-            messageDiv.textContent = result.error || '資料更新失敗';
-        }
-        messageDiv.classList.remove('d-none');
-    } catch (err) {
-        console.error('個人資料提交錯誤：', err);
-        const messageDiv = document.getElementById('edit-message');
-        messageDiv.className = 'alert alert-danger';
-        messageDiv.textContent = '提交過程中發生錯誤：' + err.message;
-        messageDiv.classList.remove('d-none');
     }
-});
 
-// 按鈕切換表單顯示
-document.getElementById('upload-toggle-btn')?.addEventListener('click', function () {
-    const uploadFormCard = document.querySelector('#upload-form').closest('.card');
-    const editFormCard = document.querySelector('#edit-profile-form').closest('.card');
-    uploadFormCard.style.display = uploadFormCard.style.display === 'none' ? 'block' : 'none';
-    editFormCard.style.display = 'none';
-});
+    // 處理頭像上傳表單
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const formData = new FormData(uploadForm);
+            fetch('/api/backend.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                uploadMessage.classList.remove('d-none', 'alert-success', 'alert-danger');
+                if (data.success) {
+                    uploadMessage.classList.add('alert-success');
+                    uploadMessage.textContent = data.success;
+                    if (data.profile_picture) {
+                        document.querySelector('#profile-picture-container img').src = data.profile_picture;
+                    }
+                    uploadCard.classList.add('d-none');
+                    uploadForm.reset();
+                    imagePreview.classList.add('d-none');
+                } else {
+                    uploadMessage.classList.add('alert-danger');
+                    uploadMessage.textContent = data.error || '上傳失敗';
+                }
+            })
+            .catch(error => {
+                uploadMessage.classList.remove('d-none', 'alert-success');
+                uploadMessage.classList.add('alert-danger');
+                uploadMessage.textContent = '上傳失敗：' + error.message;
+            });
+        });
+    }
 
-document.getElementById('edit-toggle-btn')?.addEventListener('click', function () {
-    const editFormCard = document.querySelector('#edit-profile-form').closest('.card');
-    const uploadFormCard = document.querySelector('#upload-form').closest('.card');
-    editFormCard.style.display = editFormCard.style.display === 'none' ? 'block' : 'none';
-    uploadFormCard.style.display = 'none';
+    // 處理編輯表單
+    if (editForm) {
+        editForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const formData = new FormData(editForm);
+            fetch('/api/backend.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                editMessage.classList.remove('d-none', 'alert-success', 'alert-danger');
+                if (data.success) {
+                    editMessage.classList.add('alert-success');
+                    editMessage.textContent = data.success;
+                    // 更新顯示的資料
+                    document.getElementById('bio').textContent = formData.get('bio') || '未設定';
+                    document.getElementById('country_code').textContent = formData.get('country_code') || '未設定';
+                    document.getElementById('gender').textContent = formData.get('gender') === 'M' ? '男' : (formData.get('gender') === 'F' ? '女' : (formData.get('gender') === 'Other' ? '其他' : '未設定'));
+                    document.getElementById('birthdate').textContent = formData.get('birthdate') || '未設定';
+                    document.getElementById('activity_level').textContent = formData.get('activity_level') || '未設定';
+                    editCard.classList.add('d-none');
+                    editForm.reset();
+                } else {
+                    editMessage.classList.add('alert-danger');
+                    editMessage.textContent = data.error || '更新失敗';
+                }
+            })
+            .catch(error => {
+                editMessage.classList.remove('d-none', 'alert-success');
+                editMessage.classList.add('alert-danger');
+                editMessage.textContent = '更新失敗：' + error.message;
+            });
+        });
+    }
 });
