@@ -23,7 +23,7 @@ try {
 
 $count = 0;
 $out = '';
-$stmt = $pdo->prepare('SELECT transport, distance, footprint, points, record_time FROM travel_records WHERE user_id = ? ORDER BY record_time DESC');
+$stmt = $pdo->prepare('SELECT transport, distance, footprint, points, record_time FROM travel_records WHERE user_id = ? ORDER BY record_time ASC');
 $stmt->execute([$_SESSION['user_id']]);
 $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 foreach ($records as &$record) {
