@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GreenGo - 個人主頁查詢</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/assets/css/style.css" rel="stylesheet">
+    <title>個人主頁查詢</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-dark text-light">
+<body>
     <div class="container mt-5">
         <h1 class="text-center mb-4">個人主頁查詢</h1>
         
-        <form class="row g-3 mb-4" method="GET" action="/personal">
+        <form class="row g-3 mb-4" method="GET">
             <div class="col-auto">
                 <input type="text" class="form-control" name="username" placeholder="輸入用戶名稱" value="<?php echo safe_output($username); ?>">
             </div>
@@ -41,6 +40,7 @@
                 <div class="card-body">
                     <p><strong>簡介：</strong> <span id="bio"><?php echo safe_output($user['bio'] ?? '未設定'); ?></span></p>
                     <p><strong>國家代碼：</strong> <span id="country_code"><?php echo safe_output($user['country_code'] ?? '未設定'); ?></span></p>
+                    <p><strong>城市：</strong> <span id="city"><?php echo safe_output($user['city'] ?? '未設定'); ?></span></p>
                     <p><strong>性別：</strong> <span id="gender"><?php echo safe_output($user['gender'] === 'M' ? '男' : ($user['gender'] === 'F' ? '女' : ($user['gender'] === 'Other' ? '其他' : '未設定'))); ?></span></p>
                     <p><strong>生日：</strong> <span id="birthdate"><?php echo safe_output($user['birthdate'] ?? '未設定'); ?></span></p>
                     <p><strong>活躍程度：</strong> <span id="activity_level"><?php echo safe_output($user['activity_level'] ?? '未設定'); ?></span></p>
@@ -48,81 +48,84 @@
                 </div>
             </div>
 
-            <?php if ($session_username === $user['username']): ?>
-                <button class="btn btn-outline-secondary mb-3 me-2" id="upload-toggle-btn">上傳頭像</button>
-                <button class="btn btn-outline-secondary mb-3" id="edit-toggle-btn">編輯個人資料</button>
+            <button class="btn btn-outline-secondary mb-3 me-2" id="upload-toggle-btn">上傳頭像</button>
+            <button class="btn btn-outline-secondary mb-3" id="edit-toggle-btn">編輯個人資料</button>
 
-                <div class="card mb-4 d-none" id="upload-card">
-                    <div class="card-body">
-                        <h3>上傳頭像</h3>
-                        <div id="upload-message" class="alert d-none"></div>
-                        <form id="upload-form" enctype="multipart/form-data" action="/api/backend.php" method="POST">
-                            <input type="hidden" name="action" value="upload_profile_picture">
-                            <div class="mb-3">
-                                <label for="profile_picture" class="form-label">選擇圖像（jpg, png, gif，最大 5MB）</label>
-                                <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/jpeg,image/png,image/gif" required>
-                            </div>
-                            <div class="mb-3">
-                                <img id="image-preview" class="img-fluid rounded-circle d-none" style="max-width: 150px;" alt="圖像預覽">
-                            </div>
-                            <button type="submit" class="btn btn-primary">上傳</button>
-                        </form>
-                    </div>
+            <div class="card mb-4" style="display: none;">
+                <div class="card-body">
+                    <h3>上傳頭像</h3>
+                    <div id="upload-message" class="alert d-none"></div>
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="profile_picture" class="form-label">選擇圖像（jpg, png, gif，最大 5MB）</label>
+                            <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/jpeg,image/png,image/gif" required>
+                        </div>
+                        <div class="mb-3">
+                            <img id="image-preview" class="img-fluid rounded-circle d-none" style="max-width: 150px;" alt="圖像預覽">
+                        </div>
+                        <button type="submit" class="btn btn-primary">上傳</button>
+                    </form>
                 </div>
+            </div>
 
-                <div class="card mb-4 d-none" id="edit-card">
-                    <div class="card-body">
-                        <h3>編輯個人資料</h3>
-                        <div id="edit-message" class="alert d-none"></div>
-                        <form id="edit-profile-form" action="/api/backend.php" method="POST">
-                            <input type="hidden" name="action" value="edit_profile">
-                            <div class="mb-3">
-                                <label for="bio" class="form-label fw-bold">自我介紹</label>
-                                <textarea class="form-control" name="bio" id="bio" rows="3" placeholder="輸入你的自我介紹..."><?php echo safe_output($user['bio'] ?? ''); ?></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="country_code" class="form-label fw-bold">國家代碼</label>
-                                <select id="country_code" name="country_code" class="form-select" required>
-                                    <option value="">請選擇國家</option>
-                                    <option value="TW" <?php echo ($user['country_code'] === 'TW') ? 'selected' : ''; ?>>台灣</option>
-                                    <option value="US" <?php echo ($user['country_code'] === 'US') ? 'selected' : ''; ?>>美國</option>
-                                    <option value="JP" <?php echo ($user['country_code'] === 'JP') ? 'selected' : ''; ?>>日本</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="gender" class="form-label fw-bold">性別</label>
-                                <select class="form-select" name="gender" id="gender">
-                                    <option value="" <?php echo empty($user['gender']) ? 'selected' : ''; ?>>不公開</option>
-                                    <option value="M" <?php echo ($user['gender'] === 'M') ? 'selected' : ''; ?>>男</option>
-                                    <option value="F" <?php echo ($user['gender'] === 'F') ? 'selected' : ''; ?>>女</option>
-                                    <option value="Other" <?php echo ($user['gender'] === 'Other') ? 'selected' : ''; ?>>其他</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="birthdate" class="form-label fw-bold">生日</label>
-                                <input type="date" class="form-control" name="birthdate" id="birthdate" value="<?php echo safe_output($user['birthdate'] ?? ''); ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label for="activity_level" class="form-label fw-bold">活躍程度</label>
-                                <select class="form-select" name="activity_level" id="activity_level">
-                                    <option value="" <?php echo empty($user['activity_level']) ? 'selected' : ''; ?>>不公開</option>
-                                    <option value="Low" <?php echo ($user['activity_level'] === 'Low') ? 'selected' : ''; ?>>低</option>
-                                    <option value="Medium" <?php echo ($user['activity_level'] === 'Medium') ? 'selected' : ''; ?>>中</option>
-                                    <option value="High" <?php echo ($user['activity_level'] === 'High') ? 'selected' : ''; ?>>高</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-success w-100 mt-3">儲存變更</button>
-                        </form>
-                    </div>
+            <div class="card mb-4" style="display: none;">
+                <div class="card-body">
+                    <h3>編輯個人資料</h3>
+                    <div id="edit-message" class="alert d-none"></div>
+                    <form id="edit-profile-form">
+                        <div class="mb-3">
+                            <label for="bio" class="form-label fw-bold">自我介紹</label>
+                            <textarea class="form-control" name="bio" id="bio" rows="3" placeholder="輸入你的自我介紹..."><?php echo safe_output($user['bio'] ?? ''); ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="country_code" class="form-label fw-bold">國家代碼</label>
+                            <select id="country_code" name="country_code" class="form-select" required>
+                                <option value="">請選擇國家</option>
+                                <option value="TW" <?php echo ($user['country_code'] === 'TW') ? 'selected' : ''; ?>>台灣</option>
+                                <option value="US" <?php echo ($user['country_code'] === 'US') ? 'selected' : ''; ?>>美國</option>
+                                <option value="JP" <?php echo ($user['country_code'] === 'JP') ? 'selected' : ''; ?>>日本</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="city" class="form-label fw-bold">城市</label>
+                            <select id="city" name="city" class="form-select" required data-selected="<?php echo safe_output($user['city'] ?? ''); ?>">
+                                <option value="">請先選擇國家</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="gender" class="form-label fw-bold">性別</label>
+                            <select class="form-select" name="gender" id="gender">
+                                <option value="" <?php echo empty($user['gender']) ? 'selected' : ''; ?>>不公開</option>
+                                <option value="M" <?php echo ($user['gender'] === 'M') ? 'selected' : ''; ?>>男</option>
+                                <option value="F" <?php echo ($user['gender'] === 'F') ? 'selected' : ''; ?>>女</option>
+                                <option value="Other" <?php echo ($user['gender'] === 'Other') ? 'selected' : ''; ?>>其他</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="birthdate" class="form-label fw-bold">生日</label>
+                            <input type="date" class="form-control" name="birthdate" id="birthdate" value="<?php echo safe_output($user['birthdate'] ?? ''); ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label for="activity_level" class="form-label fw-bold">活躍程度</label>
+                            <select class="form-select" name="activity_level" id="activity_level">
+                                <option value="" <?php echo empty($user['activity_level']) ? 'selected' : ''; ?>>不公開</option>
+                                <option value="Low" <?php echo ($user['activity_level'] === 'Low') ? 'selected' : ''; ?>>低</option>
+                                <option value="Medium" <?php echo ($user['activity_level'] === 'Medium') ? 'selected' : ''; ?>>中</option>
+                                <option value="High" <?php echo ($user['activity_level'] === 'High') ? 'selected' : ''; ?>>高</option>
+                            </select>
+                        </div>
+                        <input type="hidden" name="edit_profile" value="1">
+                        <button type="submit" class="btn btn-success w-100 mt-3">儲存變更</button>
+                    </form>
                 </div>
-            <?php endif; ?>
+            </div>
         <?php else: ?>
             <div class="alert alert-danger">
                 找不到用戶：<?php echo safe_output($username ?? '未提供'); ?>
             </div>
         <?php endif; ?>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/assets/js/personal.js?v=<?php echo time(); ?>"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/personal.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
