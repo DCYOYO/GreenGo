@@ -1,16 +1,68 @@
-window.onload = () => {
-    showLoginForm();
-    //checkLoginStatus();
-};
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
 
-function showLoginForm() {
-    document.getElementById('login-form').classList.remove('d-none');
-    document.getElementById('register-form').classList.add('d-none');
-}
+    // 處理登入表單
+    if (loginForm) {
+        loginForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const errorContainer = document.getElementById('error-container');
+            errorContainer.innerHTML = ''; // 清除舊錯誤
+            const formData = new FormData(loginForm);
+            fetch('/api/backend.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status == 'success') {
+                    window.location.href = '/tracking';
+                } else {
+                    window.location.href = '/';
+                    alert(`登入失敗：${data.error || '未知錯誤'}`);
+                }
+            })
+            .catch(error => {
+                alert('登入失敗：' + error.message);
+                window.location.href = '/';
+            });
+        });
+    }
 
-function showRegisterForm() {
-    document.getElementById('login-form').classList.add('d-none');
-    document.getElementById('register-form').classList.remove('d-none');
-}
-
-// 移除 login 和 register 函數，因表單已直接提交
+    // 處理註冊表單
+    if (registerForm) {
+        registerForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const errorContainer = document.getElementById('error-container');
+            errorContainer.innerHTML = ''; // 清除舊錯誤
+            const formData = new FormData(registerForm);
+            fetch('/api/backend.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = '/';
+                } else {
+                    alert(`註冊失敗：${data.error || '未知錯誤'}`);
+                    window.location.href = '/register';
+                }
+            })
+            .catch(error => {
+                alert('註冊失敗：' + error.message);
+                window.location.href = '/register';
+            });
+        });
+    }
+});

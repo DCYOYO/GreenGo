@@ -3,6 +3,167 @@ let history = [];
 let map, directionsService, directionsRenderer;
 let startMarker = null, endMarker = null;
 let markers = [];
+let watchId = null;
+let currentDistance = 0;
+let currentPoints = 0;
+let positions = [];
+
+window.onload = () => {
+  setupTransportButtons();
+};
+
+function setupTransportButtons() {
+  const container = document.getElementById("transport-options");
+  transportOptions.forEach(option => {
+    const btn = document.createElement("button");
+    btn.className = "btn btn-outline-success m-1 transport-btn";
+    btn.textContent = option;
+    btn.onclick = () => {
+      document.querySelectorAll('.transport-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add("active");
+      selectedTransport = option;
+    };
+    container.appendChild(btn);
+  });
+}
+
+function handleSubmit() {
+  const dist = parseFloat(document.getElementById("distance").value);
+  if (!selectedTransport || isNaN(dist)) {
+    alert("請選擇交通方式並輸入有效的距離。");
+    return;
+  }
+  const footprint = calculateFootprint(selectedTransport, dist);
+  const pointsEarned = calculatePoints(selectedTransport, dist);
+  const record = {
+    transport: selectedTransport,
+    distance: dist,
+    footprint: footprint,
+    points: pointsEarned,
+    record_time: new Date().toISOString()
+  };
+  history.unshift(record);
+  console.log("發送資料：", record);
+  fetch('/api/backend.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'record',
+      transport: selectedTransport,
+      distance: dist,
+      footprint: footprint,
+      points: pointsEarned
+    })
+  })
+  .then(response => {
+    console.log("儲存紀錄 - HTTP 狀態碼：", response.status);
+    return response.json();
+  })
+  .then(data => {
+    console.log('儲存紀錄 - 後端回應：', data);
+    if (data.status === 'success') {
+      console.log('資料儲存成功');
+      alert(`這次${selectedTransport}移動獲得 ${pointsEarned} 點！`);
+      suggestEcoPath(selectedTransport);
+    } else {
+      console.error('儲存資料失敗:', data.message);
+      alert('儲存資料失敗：' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('傳送錯誤:', error);
+    alert('無法連接到後端，請檢查伺服器是否運行');
+  });
+  
+  document.getElementById("distance").value = "";
+}
+
+function startTracking() {
+  if (!selectedTransport){
+    return alert("請先選擇交通方式。");
+  } 
+  positions = [];
+  currentDistance = 0;
+  currentPoints = 0;
+  watchId = navigator.geolocation.watchPosition(pos => {
+    const newPosition = {
+      lat: pos.coords.latitude,
+      lon: pos.coords.longitude,
+      time: Date.now()
+    };
+    positions.push(newPosition);
+    if (positions.length >= 2) {
+      const lastPosition = positions[positions.length - 2];
+      const newDistance = haversineDistance(lastPosition, newPosition);
+      currentDistance += newDistance;
+      const newPoints = calculatePoints(selectedTransport, currentDistance);
+      if (newPoints > currentPoints) {
+        const pointsGained = newPoints - currentPoints;
+        alert(`你剛獲得 ${pointsGained} 點！目前總點數：${newPoints}`);
+        currentPoints = newPoints;
+      }
+    }
+    console.log("收到位置：", pos.coords.latitude, pos.coords.longitude, "目前距離：", currentDistance.toFixed(3), "公里");
+  }, err => {
+    alert("無法取得位置資訊: " + err.message);
+  }, { enableHighAccuracy: true });
+}
+
+function stopTracking() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+    let totalDistance = 0;
+    for (let i = 1; i < positions.length; i++) {
+      totalDistance += haversineDistance(positions[i - 1], positions[i]);
+    }
+    totalDistance = parseFloat(totalDistance.toFixed(3));
+    const footprint = calculateFootprint(selectedTransport, totalDistance);
+    const pointsEarned = calculatePoints(selectedTransport, totalDistance);
+    const record = {
+      transport: selectedTransport,
+      distance: totalDistance,
+      footprint: footprint,
+      points: pointsEarned,
+      record_time: new Date().toISOString()
+    };
+    history.unshift(record);
+    console.log("發送資料：", record);
+    fetch('/api/backend.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'record',
+        transport: selectedTransport,
+        distance: totalDistance,
+        footprint: footprint,
+        points: pointsEarned
+      })
+    })
+    .then(response => {
+      console.log("儲存紀錄 - HTTP 狀態碼：", response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.log('儲存紀錄 - 後端回應：', data);
+      if (data.status === 'success') {
+        console.log('資料儲存成功');
+        alert(`這次${selectedTransport}移動獲得 ${pointsEarned} 點！`);
+        suggestEcoPath(selectedTransport);
+      } else {
+        console.error('儲存資料失敗:', data.message);
+        alert('儲存資料失敗：' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('傳送錯誤:', error);
+      alert('無法連接到後端，請檢查伺服器是否運行');
+    });
+    
+    currentDistance = 0;
+    currentPoints = 0;
+  }
+}
 
 // 初始化地圖並設置相關功能
 function initMap() {
