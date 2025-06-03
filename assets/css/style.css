@@ -25,13 +25,36 @@ body {
     height: 40px;
     background-color: #75c075; /* 若想要固定背景色 */
 }
+
+.login-cons-bg{
+  width:55%;
+  margin: 0 auto;
+  background-size:contain;
+  margin-bottom: 10%;
+  background-image:url(https://i.pinimg.com/736x/b4/a3/8a/b4a38af98295c63844fb618ed71cb5fc.jpg);
+  background-size: contain;
+  background-position: center;
+  
+}
+.momo{
+  background-color: #4e4e4e7e;
+  backdrop-filter: blur(2px);
+}
+.login-container {
+  margin: 0 auto;
+  padding: 0 15px;
+}
 .card {
-  background-color: #1e1e1e;
-  border: 1px solid #2a2a2a;
+  background-color: #171717c7;
+  backdrop-filter: blur(1000px);
+  border: 1px solid #2c2c2c;
   color: #ffffff;
 }
 .card-title {
   color: #90ee90;
+}
+.card-body {
+  background-color: rgba(0, 0, 0, 0);
 }
 .form-control {
   background-color: #2b2b2b;
@@ -77,9 +100,6 @@ body {
   background-color: #1f513f;
   border-color: #14532d;
   color: #d1e7dd;
-}
-.card-body {
-  background-color: #000000;
 }
 .table {
   color: #ffffff;
