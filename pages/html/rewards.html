@@ -30,14 +30,14 @@
                     <li class="nav-item"><a class="nav-link active" href="/rewards">獎勵</a></li>
                 </ul>
             </div>
-            <form action="/api/backend.php" method="POST" class="d-flex align-items-center">
-                <div class="user-avatar rounded-circle me-2 d-flex align-items-center justify-content-center">
-                    <span class="text-white fw-bold"><?php echo safe_output($username[0]); ?></span>
-                </div>
-                <span class="me-3 fw-bold"><?php echo safe_output($username); ?></span>
-                <input type="hidden" name="action" value="logout">
-                <button type="submit" class="btn btn-outline-danger btn-sm">登出</button>
-            </form>
+                <form action="/api/backend.php" method="POST" class="fixed-logout d-flex align-items-center shadow-sm rounded-pill px-3 py-1">
+                    <div class="user-avatar rounded-circle me-2 d-flex align-items-center justify-content-center">
+                        <span class="text-white fw-bold"><?php echo safe_output($username[0]); ?></span>
+                    </div>
+                    <span class="me-3 fw-bold"><?php echo safe_output($username); ?></span>
+                    <input type="hidden" name="action" value="logout">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">登出</button>
+                </form>
         </div>
     </nav>
     <div class="container py-5">
