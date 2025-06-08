@@ -1,5 +1,7 @@
 <?php
 // index.php
+require_once __DIR__ . '/api/db.php';
+
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_secure', 0);
 ini_set('session.use_strict_mode', 1);
@@ -9,7 +11,7 @@ ini_set('session.gc_probability', 1);
 ini_set('session.gc_divisor', 100);
 
 // 設定區
-define('DEBUG_MODE', false);
+define('DEBUG_MODE', true);
 define('CONTROLLER_PATH', __DIR__ . '/pages/php/');
 define('TEMPLATE_PATH', __DIR__ . '/pages/html/');
 
@@ -37,7 +39,13 @@ function safe_output($string)
 function debug_log($message)
 {
     if (DEBUG_MODE) {
-        error_log("Debug: $message", 3, __DIR__ . '/logs/debug.log');
+        $context = sprintf(
+            "User: %s, Method: %s, Path: %s",
+            $_SESSION['user_id'] ?? 'Guest',
+            $_SERVER['REQUEST_METHOD'],
+            $_SERVER['REQUEST_URI']
+        );
+        error_log("[$context] $message", 3, __DIR__ . '/logs/debug.log');
     }
 }
 
@@ -103,44 +111,48 @@ function generate_csrf_token()
 
 function check_auth_token($pdo, $path, $public_pages)
 {
-    // 只在公開頁面檢查 auth_token
     if (!in_array($path, $public_pages)) {
         return;
     }
 
     if (!isset($_COOKIE['auth_token']) || isset($_SESSION['user_id'])) {
-        return; // 無 token 或已登入，無需處理
+        return;
     }
 
     $token = $_COOKIE['auth_token'];
-    $stmt = $pdo->prepare('SELECT user_id, expires_at FROM auth_tokens WHERE token = ?');
-    $stmt->execute([$token]);
-    $auth = $stmt->fetch(PDO::FETCH_ASSOC);
+    $auth = executeQuery(
+        'SELECT user_id, expires_at, remember_me FROM auth_tokens WHERE token = ?',
+        [$token],
+        'one'
+    );
 
-    if ($auth && new DateTime($auth['expires_at']) > new DateTime()) {
-        $stmt = $pdo->prepare('SELECT id, username FROM users WHERE id = ?');
-        $stmt->execute([$auth['user_id']]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($auth && $auth['remember_me'] == 1 && new DateTime($auth['expires_at']) > new DateTime()) {
+        $user = executeQuery(
+            'SELECT id, username FROM users WHERE id = ?',
+            [$auth['user_id']],
+            'one'
+        );
 
         if ($user) {
-            session_unset(); // 清除舊 session 數據
+            session_unset();
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             session_set_cookie_params([
                 'lifetime' => 0,
                 'path' => '/',
-                'secure' => false, // localhost 不使用 HTTPS
+                'secure' => false,
                 'httponly' => true,
                 'samesite' => 'Strict'
             ]);
             session_regenerate_id(true);
             debug_log("Restored session for user: {$user['username']} via auth token");
-        } else {
-            setcookie('auth_token', '', time() - 3600, '/', '', false, true);
+            header('Location: /tracking');
+            exit;
         }
-    } else {
-        setcookie('auth_token', '', time() - 3600, '/', '', false, true);
     }
+    // 清除無效或非 remember_me 的 token
+    setcookie('auth_token', '', time() - 3600, '/', '', false, true);
+    executeNonQuery('DELETE FROM auth_tokens WHERE token = ?', [$token]);
 }
 
 function handle_page_request($path, $pages, $public_pages)
@@ -164,34 +176,37 @@ function handle_page_request($path, $pages, $public_pages)
     }
 
     session_start();
-
-    // 資料庫連線
-    $host = 'localhost';
-    $dbname = 'carbon_tracker';
-    $username = 'root';
-    $password = '';
-    try {
-        $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    } catch (PDOException $e) {
-        debug_log("Database connection failed: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => '資料庫連線失敗']);
+    $check['remember_me'] = 0;
+    if (isset($_SESSION['user_id']) && isset($_COOKIE['auth_token']))
+        // 檢查 remember_me 狀態
+        $check = executeQuery(
+            'SELECT remember_me FROM auth_tokens WHERE user_id = ?',
+            [$_SESSION['user_id']]
+        );
+    if (in_array($path, $public_pages) && isset($_SESSION['user_id']) && isset($_COOKIE['auth_token']) && $check['remember_me'] == 1) {
+        header('Location: /tracking');
         exit;
+    } else if ((in_array($path, $public_pages) && isset($_SESSION['user_id']) && isset($_COOKIE['auth_token']) && $check['remember_me'] == 0 && $path == '' )|| (in_array($path, $public_pages) && isset($_SESSION['user_id']) && isset($_COOKIE['auth_token']) && $check['remember_me'] == 0 &&isset($_SESSION['first_login'])&& $path == '')) {
+        if (isset($_SESSION['first_login']) && $_SESSION['first_login'] == true) {
+            unset($_SESSION['first_login']);
+        } else {
+            if (isset($_COOKIE['auth_token'])) {
+                executeNonQuery('DELETE FROM auth_tokens WHERE token = ?', [$_COOKIE['auth_token']]);
+            }
+            setcookie('auth_token', '', time() - 3600, '/', '', false, true);
+            unset($_SESSION['user_id']);
+            unset($_SESSION['username']);
+        }
     }
 
-    // 僅在公開頁面檢查 auth_token
+    $pdo = getPDO();
     check_auth_token($pdo, $path, $public_pages);
-
-    // 生成 CSRF token
     generate_csrf_token();
 
-    if (!in_array($path, $public_pages)) {
-        if (!isset($_SESSION['user_id'])) {
-            debug_log("未登入，導回 /");
-            header('Location: /');
-            exit;
-        }
+    if (!in_array($path, $public_pages) && !isset($_SESSION['user_id'])) {
+        debug_log("未登入，導回 /");
+        header('Location: /');
+        exit;
     }
 
     $data = require_with_check($controllerFile, 'controller') ?: [];
@@ -199,7 +214,7 @@ function handle_page_request($path, $pages, $public_pages)
     if ($templateFile) {
         echo render_template($templateFile, $data);
     }
-    exit;
+        exit;
 }
 
 // 路由流程

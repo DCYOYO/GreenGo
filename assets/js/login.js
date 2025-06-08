@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .catch(error => {
-                alert('登入失敗：' + error.message);
+                //alert('登入失敗：' + error.message);
                 window.location.href = '/';
             });
         });

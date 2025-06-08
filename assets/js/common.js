@@ -130,3 +130,4 @@ function redeemReward(rewardId) {
     })
     .catch(error => console.error('兌換失敗:', error));
 }
+

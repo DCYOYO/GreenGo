@@ -1,40 +1,50 @@
 <?php
-if (!isset($_SESSION['user_id'])) {
+require_once __DIR__ . '/../../api/db.php';
+
+if (!isset($_SESSION['user_id']) && !isset($_COOKIE['auth_token'])) {
     header('Location: /');
     exit;
 }
 
-$host = 'localhost';
-$dbname = 'carbon_tracker';
-$username = 'root';
-$password = '';
+$user = executeQuery(
+    'SELECT total_points FROM users WHERE id = ?',
+    [$_SESSION['user_id']],
+    'one'
+);
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
+$rewards = executeQuery(
+    'SELECT id, name, points_required, description 
+     FROM rewards 
+     ORDER BY points_required ASC',
+    [],
+    'all'
+);
+
+if (!$user) {
     return [
-        'error' => '資料庫連接失敗: ' . $e->getMessage(),
-        'rewards_html' => '',
-        'username' => $_SESSION['username']
+        'error' => '無法獲取用戶數據',
+        'points' => 0,
+        'username' => $_SESSION['username'],
+        'rewards_html' => ''
     ];
 }
 
+$count = 1;
 $out = '';
-$stmt = $pdo->prepare('SELECT id, name, points_required, description FROM rewards');
-$stmt->execute();
-$rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
-foreach ($rewards as &$record) {
+foreach ($rewards as &$reward) {
     $out .= "<div class='card-body card mb-2'>" .
-            "<h6 class='card-title'>" . htmlspecialchars($record['name']) . "</h6>" .
-            "<p class='card-text'>需要" . htmlspecialchars($record['points_required']) . "</p>" .
-            "<p class='card-text'>" . htmlspecialchars($record['description']) . "</p>" .
-            "<button class='btn btn-primary' onclick=\"redeemReward(" . $record['id'] . ")\">兌換</button>" .
+            "<h6 class='card-title'>" . htmlspecialchars($reward['name']) . "</h6>" .
+            "<p class='card-text'>需要" . htmlspecialchars($reward['points_required']) . "</p>" .
+            "<p class='card-text'>" . htmlspecialchars($reward['description']) . "</p>" .
+            "<button class='btn btn-primary' onclick=\"redeemReward(" . $reward['id'] . ")\">兌換</button>" .
             "</div>";
+    $count++;
 }
 
 return [
     'rewards_html' => $out,
+    'points' => $user['total_points'] ?? 0,
     'username' => $_SESSION['username'],
     'error' => null
 ];
+?>
