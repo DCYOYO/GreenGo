@@ -1,9 +1,9 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2025-05-28 09:21:37
+-- 產生時間： 2025-06-08 19:31:40
 -- 伺服器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -26,12 +26,28 @@ USE `carbon_tracker`;
 -- --------------------------------------------------------
 
 --
+-- 資料表結構 `auth_tokens`
+--
+
+DROP TABLE IF EXISTS `auth_tokens`;
+CREATE TABLE `auth_tokens` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `remember_me` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- 資料表結構 `personal_page`
 --
 
 DROP TABLE IF EXISTS `personal_page`;
 CREATE TABLE `personal_page` (
-  `id` int(11) NOT NULL COMMENT '主鍵 ID',
+  `id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL COMMENT '關聯的使用者名稱',
   `bio` text DEFAULT NULL COMMENT '個人簡介',
   `profile_picture` varchar(255) DEFAULT NULL COMMENT '圖片路徑',
@@ -49,7 +65,7 @@ CREATE TABLE `personal_page` (
 --
 
 INSERT INTO `personal_page` (`id`, `username`, `bio`, `profile_picture`, `country_code`, `city`, `gender`, `birthdate`, `activity_level`, `created_at`, `last_login`) VALUES
-(1, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-05-18 00:01:56', NULL);
+(1, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:02', NULL);
 
 -- --------------------------------------------------------
 
@@ -66,13 +82,6 @@ CREATE TABLE `redeem_history` (
   `points_used` int(11) NOT NULL,
   `redeem_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- 傾印資料表的資料 `redeem_history`
---
-
-INSERT INTO `redeem_history` (`id`, `user_id`, `reward_id`, `reward_name`, `points_used`, `redeem_time`) VALUES
-(1, 1, 2, '腳踏車租借券', 100, '2025-05-04 16:02:21');
 
 -- --------------------------------------------------------
 
@@ -117,14 +126,6 @@ CREATE TABLE `travel_records` (
   `record_time` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- 傾印資料表的資料 `travel_records`
---
-
-INSERT INTO `travel_records` (`id`, `user_id`, `transport`, `distance`, `footprint`, `points`, `record_time`) VALUES
-(1, 1, '腳踏車', 179.32, 0, 179, '2025-05-04 15:59:31'),
-(2, 1, '步行', 5.702, 0, 11, '2025-05-04 16:00:05');
-
 -- --------------------------------------------------------
 
 --
@@ -145,39 +146,25 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `total_points`, `total_footprint`) VALUES
-(1, 'aaa', '$2y$10$gZayMX6V2SX5oFJh7BCyC.WVNflyi5b/NQkQATWvQ6HJSDBNzvzPi', 90, 0.68493);
+(1, 'aaa', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i', 0, 0);
 
 --
 -- 已傾印資料表的索引
 --
 
 --
+-- 資料表索引 `auth_tokens`
+--
+ALTER TABLE `auth_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `token` (`token`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- 資料表索引 `personal_page`
 --
 ALTER TABLE `personal_page`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `username` (`username`);
-
---
--- 資料表索引 `redeem_history`
---
-ALTER TABLE `redeem_history`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `reward_id` (`reward_id`);
-
---
--- 資料表索引 `rewards`
---
-ALTER TABLE `rewards`
   ADD PRIMARY KEY (`id`);
-
---
--- 資料表索引 `travel_records`
---
-ALTER TABLE `travel_records`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
 
 --
 -- 資料表索引 `users`
@@ -191,28 +178,16 @@ ALTER TABLE `users`
 --
 
 --
--- 使用資料表自動遞增(AUTO_INCREMENT) `personal_page`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `auth_tokens`
 --
-ALTER TABLE `personal_page`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主鍵 ID', AUTO_INCREMENT=2;
-
---
--- 使用資料表自動遞增(AUTO_INCREMENT) `redeem_history`
---
-ALTER TABLE `redeem_history`
+ALTER TABLE `auth_tokens`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- 使用資料表自動遞增(AUTO_INCREMENT) `rewards`
+-- 使用資料表自動遞增(AUTO_INCREMENT) `personal_page`
 --
-ALTER TABLE `rewards`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- 使用資料表自動遞增(AUTO_INCREMENT) `travel_records`
---
-ALTER TABLE `travel_records`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+ALTER TABLE `personal_page`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `users`
@@ -225,23 +200,10 @@ ALTER TABLE `users`
 --
 
 --
--- 資料表的限制式 `personal_page`
+-- 資料表的限制式 `auth_tokens`
 --
-ALTER TABLE `personal_page`
-  ADD CONSTRAINT `personal_page_ibfk_1` FOREIGN KEY (`username`) REFERENCES `users` (`username`) ON DELETE CASCADE;
-
---
--- 資料表的限制式 `redeem_history`
---
-ALTER TABLE `redeem_history`
-  ADD CONSTRAINT `redeem_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `redeem_history_ibfk_2` FOREIGN KEY (`reward_id`) REFERENCES `rewards` (`id`);
-
---
--- 資料表的限制式 `travel_records`
---
-ALTER TABLE `travel_records`
-  ADD CONSTRAINT `travel_records_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `auth_tokens`
+  ADD CONSTRAINT `auth_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
