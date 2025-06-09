@@ -1,5 +1,7 @@
 <?php
 header('Content-Type: application/json; charset=UTF-8');
+require_once __DIR__ . '/db.php';
+
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
@@ -8,21 +10,6 @@ session_set_cookie_params([
     'samesite' => 'Strict'
 ]);
 session_start();
-
-// 資料庫連接配置（請根據你的環境更新）
-$host = 'localhost';
-$dbname = 'carbon_tracker';
-$username = 'root'; // 替換為你的資料庫用戶名
-$password = ''; // 替換為你的資料庫密碼
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    $_SESSION['error'] = '資料庫連接失敗: ' . $e->getMessage();
-    header('Location: ' . $_SERVER['HTTP_REFERER'] ?: '/');
-    exit;
-}
 
 if (empty($_POST)) {
     $rawData = file_get_contents('php://input');
@@ -33,14 +20,7 @@ if (empty($_POST)) {
 }
 $action = isset($_POST['action']) ? $_POST['action'] : '';
 
-// 驗證 CSRF token（除了 logout）
-if (!in_array($action, ['logout'])) {
-    $csrf_token = $_POST['csrf_token'] ?? '';
-    if (!isset($_SESSION['csrf_token']) || $csrf_token !== $_SESSION['csrf_token']) {
-        echo json_encode(['error' => 'CSRF token 驗證失敗']);
-        exit;
-    }
-}
+
 switch ($action) {
     case 'login':
         $username = trim($_POST['username'] ?? '');
@@ -58,55 +38,90 @@ switch ($action) {
             exit;
         }
 
-        $stmt = $pdo->prepare('SELECT id, username, password FROM users WHERE username = ?');
-        $stmt->execute([$username]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $user = executeQuery(
+            'SELECT id, username, password FROM users WHERE username = ?',
+            [$username],
+            'one'
+        );
 
         if (!$user || !password_verify($password, $user['password'])) {
             echo json_encode(['error' => '用戶名或密碼錯誤']);
             exit;
         }
 
-        // 清除舊 session 數據
+        // 清除舊 session 和無效的 auth_token
         session_unset();
+        if (isset($_COOKIE['auth_token'])) {
+            executeNonQuery('DELETE FROM auth_tokens WHERE token = ? OR expires_at < NOW()', [$_COOKIE['auth_token']]);
+            setcookie('auth_token', '', time() - 3600, '/', '', false, true);
+        }
+
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         unset($_SESSION['_authnum']);
 
-        // 設置臨時 session cookie
         session_set_cookie_params([
-            'lifetime' => 0, // 瀏覽器關閉時失效
+            'lifetime' => 0,
             'path' => '/',
-            'secure' => false, // localhost 不使用 HTTPS
+            'secure' => false,
             'httponly' => true,
             'samesite' => 'Strict'
         ]);
         session_regenerate_id(true);
-
+        $token = bin2hex(random_bytes(32));
+        $expires_at = (new DateTime())->modify('+30 days')->format('Y-m-d H:i:s');
         if ($remember_me) {
-            $token = bin2hex(random_bytes(32));
-            $expires_at = (new DateTime())->modify('+30 days')->format('Y-m-d H:i:s');
-            $stmt = $pdo->prepare('INSERT INTO auth_tokens (user_id, token, expires_at) VALUES (?, ?, ?)');
-            $stmt->execute([$user['id'], $token, $expires_at]);
+
+            executeNonQuery(
+                'INSERT INTO auth_tokens (user_id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
+                [$user['id'], $token, $expires_at, 1]
+            );
 
             setcookie('auth_token', $token, [
                 'expires' => time() + (30 * 24 * 3600),
                 'path' => '/',
                 'httponly' => true,
-                'secure' => false, // localhost 不使用 HTTPS
+                'secure' => false,
                 'samesite' => 'Strict'
             ]);
         } else {
-            // 清除任何現有的 auth_token
-            if (isset($_COOKIE['auth_token'])) {
-                $stmt = $pdo->prepare('DELETE FROM auth_tokens WHERE token = ?');
-                $stmt->execute([$_COOKIE['auth_token']]);
-                setcookie('auth_token', '', time() - 3600, '/', '', false, true);
-            }
+            if (executeQuery(
+                'SELECT token FROM auth_tokens WHERE user_id = ? AND remember_me = 0',
+                [$user['id']],
+                'one'
+            )) {
+                executeNonQuery('UPDATE user_id=?,token=?,expires_at=?,remember_me=? WHERE user_id=? AND remember_me=0', [$user['id'], $token, $expires_at, 0, $user['id']]);
+            } else
+                executeNonQuery(
+                    'INSERT INTO auth_tokens (user_id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
+                    [$user['id'], $token, $expires_at, 0]
+                );
+            setcookie('auth_token', $token, [
+                'expires' => 0,
+                'path' => '/',
+                'httponly' => true,
+                'secure' => false,
+                'samesite' => 'Strict'
+            ]);
+            $_SESSION['first_login'] = true;
         }
-
-        echo json_encode(['status' => 'success']);
+        header('Location: /tracking');
+        //echo json_encode(['status' => 'success']);
         exit;
+
+    case 'logout':
+        if (isset($_COOKIE['auth_token'])) {
+            executeNonQuery('DELETE FROM auth_tokens WHERE token = ?', [$_COOKIE['auth_token']]);
+            setcookie('auth_token', '', time() - 3600, '/', '', false, true);
+        }
+        session_unset();
+        session_destroy();
+        if (isset($_COOKIE[session_name()])) {
+            setcookie(session_name(), '', time() - 3600, '/', '', false, true);
+        }
+        header('Location: /');
+        exit;
+
     case 'register':
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
@@ -127,44 +142,39 @@ switch ($action) {
             exit;
         }
 
-        $stmt = $pdo->prepare('SELECT id FROM users WHERE username = ?');
-        $stmt->execute([$username]);
-        if ($stmt->fetch()) {
+        $existing_user = executeQuery(
+            'SELECT id FROM users WHERE username = ?',
+            [$username],
+            'one'
+        );
+        if ($existing_user) {
             echo json_encode(['error' => '用戶名已存在']);
             exit;
         }
 
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare('INSERT INTO users (username, password, total_points, total_footprint) VALUES (?, ?, 0, 0)');
+        $pdo = getPDO();
+        $pdo->beginTransaction();
         try {
-            $stmt->execute([$username, $hashed_password]);
-            $stmt = $pdo->prepare('INSERT INTO personal_page (username) VALUES (?)');
-            $stmt->execute([$username]);
+            executeNonQuery(
+                'INSERT INTO users (username, password, total_points, total_footprint) VALUES (?, ?, 0, 0)',
+                [$username, $hashed_password]
+            );
+            executeNonQuery(
+                'INSERT INTO personal_page (username) VALUES (?)',
+                [$username]
+            );
+            $pdo->commit();
             echo json_encode(['status' => 'success', 'message' => '註冊成功，請登入']);
         } catch (PDOException $e) {
+            $pdo->rollback();
             echo json_encode(['error' => '註冊失敗: ' . $e->getMessage()]);
         }
         exit;
 
-    case 'logout':
-        if (isset($_COOKIE['auth_token'])) {
-            $token = $_COOKIE['auth_token'];
-            $stmt = $pdo->prepare('DELETE FROM auth_tokens WHERE token = ?');
-            $stmt->execute([$token]);
-            setcookie('auth_token', '', time() - 3600, '/', '', false, true);
-        }
-        // 清除所有 session 數據
-        session_unset();
-        session_destroy();
-        // 明確清除 PHPSESSID Cookie
-        if (isset($_COOKIE[session_name()])) {
-            setcookie(session_name(), '', time() - 3600, '/', '', false, true);
-        }
-        header('Location: /');
-        exit;
     case 'record':
         if (!isset($_SESSION['user_id'])) {
-            header('Location: /');
+            echo json_encode(['error' => '請先登入']);
             exit;
         }
 
@@ -172,12 +182,7 @@ switch ($action) {
         $distance = floatval($_POST['distance'] ?? 0);
 
         if (empty($transport) || $distance <= 0) {
-            echo json_encode([
-                'status' => "false",
-                'message' => '無效的交通方式或距離',
-            ]);
-            //$_SESSION['error'] = '無效的交通方式或距離';
-            //header('Location: /tracking');
+            echo json_encode(['status' => 'error', 'message' => '無效的交通方式或距離']);
             exit;
         }
 
@@ -199,23 +204,29 @@ switch ($action) {
             $points = floor($distance / 5);
         }
 
-        $stmt = $pdo->prepare('INSERT INTO travel_records (user_id, transport, distance, footprint, points) VALUES (?, ?, ?, ?, ?)');
+        $pdo = getPDO();
+        $pdo->beginTransaction();
         try {
-            $stmt->execute([$_SESSION['user_id'], $transport, $distance, $footprint, $points]);
-            $stmt = $pdo->prepare('UPDATE users SET total_points = total_points + ?, total_footprint = total_footprint + ? WHERE id = ?');
-            $stmt->execute([$points, $footprint, $_SESSION['user_id']]);
+            executeNonQuery(
+                'INSERT INTO travel_records (user_id, transport, distance, footprint, points) VALUES (?, ?, ?, ?, ?)',
+                [$_SESSION['user_id'], $transport, $distance, $footprint, $points]
+            );
+            executeNonQuery(
+                'UPDATE users SET total_points = total_points + ?, total_footprint = total_footprint + ? WHERE id = ?',
+                [$points, $footprint, $_SESSION['user_id']]
+            );
+            $pdo->commit();
             echo json_encode([
-                'status' => "success",
+                'status' => 'success',
                 'message' => '紀錄成功',
                 'points' => $points,
                 'footprint' => $footprint
             ]);
-            //header('Location: /tracking');
         } catch (PDOException $e) {
-            $_SESSION['error'] = '儲存記錄失敗: ' . $e->getMessage();
-            header('Location: /tracking');
+            $pdo->rollback();
+            echo json_encode(['status' => 'error', 'message' => '儲存記錄失敗: ' . $e->getMessage()]);
         }
-        break;
+        exit;
 
     case 'redeem':
         if (!isset($_SESSION['user_id'])) {
@@ -225,41 +236,47 @@ switch ($action) {
 
         $reward_id = intval($_POST['reward_id'] ?? 0);
 
-        $stmt = $pdo->prepare('SELECT name, points_required FROM rewards WHERE id = ?');
-        $stmt->execute([$reward_id]);
-        $reward = $stmt->fetch(PDO::FETCH_ASSOC);
+        $reward = executeQuery(
+            'SELECT name, points_required FROM rewards WHERE id = ?',
+            [$reward_id],
+            'one'
+        );
 
         if (!$reward) {
             echo json_encode(['status' => 'error', 'message' => '無效的獎勵']);
             exit;
         }
 
-        $stmt = $pdo->prepare('SELECT total_points FROM users WHERE id = ?');
-        $stmt->execute([$_SESSION['user_id']]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $user = executeQuery(
+            'SELECT total_points FROM users WHERE id = ?',
+            [$_SESSION['user_id']],
+            'one'
+        );
 
         if ($user['total_points'] < $reward['points_required']) {
             echo json_encode(['status' => 'error', 'message' => '點數不足']);
             exit;
         }
 
+        $pdo = getPDO();
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('UPDATE users SET total_points = total_points - ? WHERE id = ?');
-            $stmt->execute([$reward['points_required'], $_SESSION['user_id']]);
-
-            $stmt = $pdo->prepare('INSERT INTO redeem_history (user_id, reward_id, reward_name, points_used, redeem_time) VALUES (?, ?, ?, ?, NOW())');
-            $stmt->execute([$_SESSION['user_id'], $reward_id, $reward['name'], $reward['points_required']]);
-
+            executeNonQuery(
+                'UPDATE users SET total_points = total_points - ? WHERE id = ?',
+                [$reward['points_required'], $_SESSION['user_id']]
+            );
+            executeNonQuery(
+                'INSERT INTO redeem_history (user_id, reward_id, reward_name, points_used, redeem_time) VALUES (?, ?, ?, ?, NOW())',
+                [$_SESSION['user_id'], $reward_id, $reward['name'], $reward['points_required']]
+            );
             $pdo->commit();
             echo json_encode(['status' => 'success', 'message' => '兌換成功']);
         } catch (PDOException $e) {
             $pdo->rollback();
             echo json_encode(['status' => 'error', 'message' => '兌換失敗: ' . $e->getMessage()]);
         }
-        break;
-
+        exit;
     default:
         header('Location: ' . $_SERVER['HTTP_REFERER'] ?: '/');
-        break;
+        exit;
 }

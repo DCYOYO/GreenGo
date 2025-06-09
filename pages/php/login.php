@@ -2,7 +2,7 @@
 // pages/php/login.php
 
 // 檢查是否已登入
-if (isset($_SESSION['user_id'])) {
+if (isset($_SESSION['user_id'])&& isset($_COOKIE['auth_token'])) {
     header('Location: /tracking');
     exit;
 }

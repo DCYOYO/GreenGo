@@ -1,31 +1,28 @@
 <?php
-if (!isset($_SESSION['user_id'])) {
+require_once __DIR__ . '/../../api/db.php';
+
+if (!isset($_SESSION['user_id'])&& !isset($_COOKIE['auth_token'])) {
     header('Location: /');
     exit;
 }
 
-$host = 'localhost';
-$dbname = 'carbon_tracker';
-$username = 'root';
-$password = '';
+$user = executeQuery(
+    'SELECT total_points FROM users WHERE id = ?',
+    [$_SESSION['user_id']],
+    'one'
+);
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $stmt = $pdo->prepare('SELECT total_points FROM users WHERE id = ?');
-    $stmt->execute([$_SESSION['user_id']]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    $points = $user['total_points'] ?? 0;
-} catch (PDOException $e) {
+if (!$user) {
     return [
-        'error' => '資料庫連接失敗: ' . $e->getMessage(),
+        'error' => '無法獲取用戶數據',
         'points' => 0,
         'username' => $_SESSION['username']
     ];
 }
 
 return [
-    'points' => $points,
+    'points' => $user['total_points'] ?? 0,
     'username' => $_SESSION['username'],
     'error' => null
 ];
+?>

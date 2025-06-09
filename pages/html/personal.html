@@ -90,6 +90,10 @@
                             <label for="city" class="form-label fw-bold">城市</label>
                             <select id="city" name="city" class="form-select" required data-selected="<?php echo safe_output($user['city'] ?? ''); ?>">
                                 <option value="">請先選擇國家</option>
+                                <option value="Taipei" <?php echo ($user['city'] === 'Taipei') ? 'selected' : ''; ?>>台北</option>
+                                <option value="New York" <?php echo ($user['city'] === 'New York') ? 'selected' : ''; ?>>紐約</option>
+                                <option value="Tokyo" <?php echo ($user['city'] === 'Tokyo') ? 'selected' : ''; ?>>東京</option>
+                                <option value="Other" <?php echo ($user['city'] === 'Other') ? 'selected' : ''; ?>>其他</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -114,7 +118,7 @@
                                 <option value="High" <?php echo ($user['activity_level'] === 'High') ? 'selected' : ''; ?>>高</option>
                             </select>
                         </div>
-                        <input type="hidden" name="edit_profile" value="1">
+                        <input type="hidden" name="action" value="edit_profile">
                         <button type="submit" class="btn btn-success w-100 mt-3">儲存變更</button>
                     </form>
                 </div>
