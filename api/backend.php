@@ -73,7 +73,7 @@ switch ($action) {
         if ($remember_me) {
 
             executeNonQuery(
-                'INSERT INTO auth_tokens (user_id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
+                'INSERT INTO auth_tokens (id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
                 [$user['id'], $token, $expires_at, 1]
             );
 
@@ -86,14 +86,14 @@ switch ($action) {
             ]);
         } else {
             if (executeQuery(
-                'SELECT token FROM auth_tokens WHERE user_id = ? AND remember_me = 0',
+                'SELECT token FROM auth_tokens WHERE id = ? AND remember_me = 0',
                 [$user['id']],
                 'one'
             )) {
                 executeNonQuery('UPDATE user_id=?,token=?,expires_at=?,remember_me=? WHERE user_id=? AND remember_me=0', [$user['id'], $token, $expires_at, 0, $user['id']]);
             } else
                 executeNonQuery(
-                    'INSERT INTO auth_tokens (user_id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
+                    'INSERT INTO auth_tokens (id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
                     [$user['id'], $token, $expires_at, 0]
                 );
             setcookie('auth_token', $token, [
