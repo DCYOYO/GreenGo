@@ -36,7 +36,11 @@
                     <div class="user-avatar rounded-circle me-2 d-flex align-items-center justify-content-center">
                         <span class="text-white fw-bold"><?php echo safe_output($username[0]); ?></span>
                     </div>
-                    <span class="me-3 fw-bold"><?php echo safe_output($username); ?></span>
+                    <span class="me-3 fw-bold">
+                        <ul class="navbar-nav ms-auto mr-4">
+                            <li class="nav-item"><a class="nav-link" href="/personal"><?php echo safe_output($username); ?></a></li>
+                        </ul>
+                    </span>
                     <input type="hidden" name="action" value="logout">
                     <button type="submit" class="btn btn-outline-danger btn-sm">登出</button>
                 </form>
