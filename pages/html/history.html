@@ -38,14 +38,43 @@
                 </form>
         </div>
     </nav>
-    <div class="container py-5">
+    <div class="container py-5 fade-in">
         <div id="history-section" class="card mb-4" style="border-radius: 15px;">
             <div class="card-body" style="border-radius: 15px;">
                 <h5 class="card-title">目前累積點數：<span id="points"><?php echo safe_output($points); ?></span> 點</h5>
                 <?php if ($error): ?>
                     <div class="alert alert-danger"><?php echo safe_output($error); ?></div>
                 <?php endif; ?>
-                <div class="hist-record-container"><?php echo $records_html; ?></div>
+                <!-- <div class="hist-record-container"><?php echo $records_html; ?></div> -->
+                <!-- 排序選單 -->
+                <div class="sort-container mb-4 p-4 rounded-lg shadow " style="border-radius: 15px;">
+                    <form method="GET" action="" class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label for="sort" class="form-label text-white">排序依據</label>
+                            <select name="sort" id="sort" class="form-select">
+                                <?php foreach ($data['sort_options'] as $value => $label): ?>
+                                    <option value="<?php echo $value; ?>" <?php echo $data['sort_field'] === $value ? 'selected' : ''; ?>>
+                                        <?php echo $label; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="order" class="form-label text-white">排序方向</label>
+                            <select name="order" id="order" class="form-select">
+                                <option value="asc" <?php echo $data['sort_order'] === 'asc' ? 'selected' : ''; ?>>升序</option>
+                                <option value="desc" <?php echo $data['sort_order'] === 'desc' ? 'selected' : ''; ?>>降序</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-green w-100">套用排序</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- 記錄顯示 -->
+                <div class="hist-record-container">
+                    <?php echo $data['records_html']; ?>
+                </div>
             </div>
         </div>
     </div>
