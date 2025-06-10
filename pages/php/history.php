@@ -36,7 +36,16 @@ $out = '';
 foreach ($records as &$record) {
     $record['distance'] = number_format($record['distance'], 2);
     $record['footprint'] = number_format($record['footprint'], 2);
-    $out .= "<li class='list-group-item'>第{$count}筆-{$record['record_time']}-{$record['transport']}-{$record['distance']} 公里 - 碳排放 {$record['footprint']} kg CO₂ - 獲得 {$record['points']} 點</li>";
+    $out .= "<div class='hist-record-card'>" .
+            "<div class='hist-card-header'>第 {$count} 筆</div>" .
+            "<div class='hist-card-body'>" .
+            "<p><strong>時間:</strong> " . htmlspecialchars($record['record_time']) . "</p>" .
+            "<p><strong>交通方式:</strong> " . htmlspecialchars($record['transport']) . "</p>" .
+            "<p><strong>距離:</strong> " . htmlspecialchars($record['distance']) . " 公里</p>" .
+            "<p><strong>碳排放:</strong> " . htmlspecialchars($record['footprint']) . " kg CO₂</p>" .
+            "<p><strong>獲得點數:</strong> " . htmlspecialchars($record['points']) . " 點</p>" .
+            "</div>" .
+            "</div>";
     $count++;
 }
 
