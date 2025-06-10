@@ -32,7 +32,6 @@ USE `carbon_tracker`;
 DROP TABLE IF EXISTS `auth_tokens`;
 CREATE TABLE `auth_tokens` (
   `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
   `token` varchar(255) NOT NULL,
   `expires_at` datetime NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -57,14 +56,14 @@ CREATE TABLE `personal_page` (
   `birthdate` date DEFAULT NULL COMMENT '生日',
   `activity_level` enum('Low','Medium','High') DEFAULT NULL COMMENT '活躍程度',
   `created_at` datetime NOT NULL DEFAULT current_timestamp() COMMENT '建立時間',
-  `last_login` datetime DEFAULT NULL COMMENT '上次登入時間'
+  `last_update` datetime DEFAULT NULL COMMENT '上次更新時間'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- 傾印資料表的資料 `personal_page`
 --
 
-INSERT INTO `personal_page` (`id`, `username`, `bio`, `profile_picture`, `country_code`, `city`, `gender`, `birthdate`, `activity_level`, `created_at`, `last_login`) VALUES
+INSERT INTO `personal_page` (`id`, `username`, `bio`, `profile_picture`, `country_code`, `city`, `gender`, `birthdate`, `activity_level`, `created_at`, `last_update`) VALUES
 (1, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:02', NULL);
 
 -- --------------------------------------------------------
@@ -157,8 +156,7 @@ INSERT INTO `users` (`id`, `username`, `password`, `total_points`, `total_footpr
 --
 ALTER TABLE `auth_tokens`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `token` (`token`),
-  ADD KEY `user_id` (`user_id`);
+  ADD UNIQUE KEY `token` (`token`);
 
 --
 -- 資料表索引 `personal_page`
@@ -180,8 +178,6 @@ ALTER TABLE `users`
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `auth_tokens`
 --
-ALTER TABLE `auth_tokens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `personal_page`
@@ -202,9 +198,7 @@ ALTER TABLE `users`
 --
 -- 資料表的限制式 `auth_tokens`
 --
-ALTER TABLE `auth_tokens`
-  ADD CONSTRAINT `auth_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-COMMIT;
+
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

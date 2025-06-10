@@ -29,12 +29,12 @@ switch ($action) {
         $remember_me = isset($_POST['remember_me']) && $_POST['remember_me'] === 'on';
 
         if (empty($username) || empty($password)) {
-            echo json_encode(['status'=>'error','error' => '請輸入用戶名和密碼']);
+            echo json_encode(['status' => 'error', 'error' => '請輸入用戶名和密碼']);
             exit;
         }
 
         if (!isset($_SESSION['_authnum']) || md5($captcha) !== $_SESSION['_authnum']) {
-            echo json_encode(['status'=>'error','error' => '驗證碼錯誤']);
+            echo json_encode(['status' => 'error', 'error' => '驗證碼錯誤']);
             exit;
         }
 
@@ -45,7 +45,7 @@ switch ($action) {
         );
 
         if (!$user || !password_verify($password, $user['password'])) {
-            echo json_encode(['status'=>'error','error' => '用戶名或密碼錯誤']);
+            echo json_encode(['status' => 'error', 'error' => '用戶名或密碼錯誤']);
             exit;
         }
 
@@ -73,7 +73,7 @@ switch ($action) {
         if ($remember_me) {
 
             executeNonQuery(
-                'INSERT INTO auth_tokens (user_id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
+                'INSERT INTO auth_tokens (id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
                 [$user['id'], $token, $expires_at, 1]
             );
 
@@ -86,14 +86,14 @@ switch ($action) {
             ]);
         } else {
             if (executeQuery(
-                'SELECT token FROM auth_tokens WHERE user_id = ? AND remember_me = 0',
+                'SELECT token FROM auth_tokens WHERE id = ? AND remember_me = 0',
                 [$user['id']],
                 'one'
             )) {
                 executeNonQuery('UPDATE user_id=?,token=?,expires_at=?,remember_me=? WHERE user_id=? AND remember_me=0', [$user['id'], $token, $expires_at, 0, $user['id']]);
             } else
                 executeNonQuery(
-                    'INSERT INTO auth_tokens (user_id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
+                    'INSERT INTO auth_tokens (id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
                     [$user['id'], $token, $expires_at, 0]
                 );
             setcookie('auth_token', $token, [
@@ -277,7 +277,145 @@ switch ($action) {
             echo json_encode(['status' => 'error', 'message' => '兌換失敗: ' . $e->getMessage()]);
         }
         exit;
-   
+    case 'upload_avatar':
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['status' => 'error', 'message' => '請先登入']);
+            exit;
+        }
+
+        if (!isset($_FILES['avatar']) || $_FILES['avatar']['error'] === UPLOAD_ERR_NO_FILE) {
+            echo json_encode(['status' => 'error', 'message' => '請選擇圖像文件']);
+            exit;
+        }
+
+        $file = $_FILES['avatar'];
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+        $max_size = 5 * 1024 * 1024; // 5MB
+
+        if (!in_array($file['type'], $allowed_types)) {
+            echo json_encode(['status' => 'error', 'message' => '僅支持 JPG、PNG 或 GIF 格式']);
+            exit;
+        }
+
+        if ($file['size'] > $max_size) {
+            echo json_encode(['status' => 'error', 'message' => '檔案大小超過 5MB']);
+            exit;
+        }
+
+        $avatar_dir = __DIR__ . '/../avatars/';
+        if (!is_dir($avatar_dir)) {
+            mkdir($avatar_dir, 0755, true);
+        }
+
+        $avatar_path = $avatar_dir . $_SESSION['user_id'] . '.jpg';
+        if (!move_uploaded_file($file['tmp_name'], $avatar_path)) {
+            echo json_encode(['status' => 'error', 'message' => '圖像上傳失敗']);
+            exit;
+        }
+
+        echo json_encode(['status' => 'success', 'message' => '頭像上傳成功', 'avatar' => "/avatars/{$_SESSION['user_id']}.jpg"]);
+        exit;
+
+    case 'update_profile':
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['status' => 'error', 'message' => '請先登入']);
+            exit;
+        }
+
+        $bio = trim($_POST['bio'] ?? '');
+        $country_code = trim($_POST['country_code'] ?? '');
+        $city = trim($_POST['city'] ?? '');
+        $gender = trim($_POST['gender'] ?? '');
+        $birthdate = trim($_POST['birthdate'] ?? '');
+        $activity_level = trim($_POST['activity_level'] ?? '');
+
+        if (strlen($bio) > 500) {
+            echo json_encode(['status' => 'error', 'message' => '自我介紹最多 500 字']);
+            exit;
+        }
+
+        $valid_countries = ['台灣', '美國', '日本'];
+        if (!empty($country_code) && !in_array($country_code, $valid_countries)) {
+            echo json_encode(['status' => 'error', 'message' => '無效的國家代碼']);
+            exit;
+        }
+
+        $valid_cities = [
+            '台灣' => ['台北', '其他'],
+            '美國' => ['紐約', '其他'],
+            '日本' => ['東京', '其他']
+        ];
+        if (!empty($city) && (!isset($valid_cities[$country_code]) || !in_array($city, $valid_cities[$country_code]))) {
+            echo json_encode(['status' => 'error', 'message' => '無效的城市']);
+            exit;
+        }
+
+        $valid_genders = ['不公開', '男', '女', '其他'];
+        if (!empty($gender) && !in_array($gender, $valid_genders)) {
+            echo json_encode(['status' => 'error', 'message' => '無效的性別']);
+            exit;
+        }
+
+        if (!empty($birthdate) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $birthdate)) {
+            echo json_encode(['status' => 'error', 'message' => '生日格式無效（YYYY-MM-DD）']);
+            exit;
+        }
+
+        $valid_activity_levels = ['不公開', '低', '中', '高'];
+        if (!empty($activity_level) && !in_array($activity_level, $valid_activity_levels)) {
+            echo json_encode(['status' => 'error', 'message' => '無效的活躍程度']);
+            exit;
+        }
+
+        $pdo = getPDO();
+        try {
+            $pdo->beginTransaction();
+            if(executeNonQuery('SELECT FROM personal_page WHERE id = ?',[$_SESSION['user_id']])) {
+                executeNonQuery(
+                'INSERT INTO personal_page (id,username, bio, country_code, city, gender, birthdate, activity_level, last_update)
+                 VALUES ((SELECT username FROM users WHERE id = ?),?, ?, ?, ?, ?, ?, ?, NOW())
+                 ON DUPLICATE KEY UPDATE 
+                 bio = ?, country_code = ?, city = ?, gender = ?, birthdate = ?, activity_level = ?, last_update = NOW()',
+                [
+                    $_SESSION['user_id'],
+                    $_SESSION['user_id'],
+                    $bio,
+                    $country_code,
+                    $city,
+                    $gender,
+                    $birthdate,
+                    $activity_level,
+                    $bio,
+                    $country_code,
+                    $city,
+                    $gender,
+                    $birthdate,
+                    $activity_level
+                ]
+                );
+            } else {
+                executeNonQuery('UPDATE personal_page SET id=?,username=?, bio=?, country_code=?, city=?, gender=?, birthdate=?, activity_level=?, last_update=NOW() WHERE id = ?',
+                [
+                    $_SESSION['user_id'],
+                    $_SESSION['username'],
+                    $bio,
+                    $country_code,
+                    $city,
+                    $gender,
+                    $birthdate,
+                    $activity_level,
+                    $_SESSION['user_id']
+                ]);
+            }
+            
+            $pdo->commit();
+            echo json_encode(['status' => 'success', 'message' => '個人資料更新成功']);
+        } catch (PDOException $e) {
+            $pdo->rollback();
+            echo json_encode(['status' => 'error', 'message' => '更新失敗: ' . $e->getMessage()]);
+        }
+        exit;
+
     default:
         header('Location: ' . $_SERVER['HTTP_REFERER'] ?: '/');
         exit;

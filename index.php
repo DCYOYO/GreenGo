@@ -11,7 +11,7 @@ ini_set('session.gc_probability', 1);
 ini_set('session.gc_divisor', 100);
 
 // 設定區
-define('DEBUG_MODE', true);
+define('DEBUG_MODE', false);
 define('CONTROLLER_PATH', __DIR__ . '/pages/php/');
 define('TEMPLATE_PATH', __DIR__ . '/pages/html/');
 
@@ -121,7 +121,7 @@ function check_auth_token($pdo, $path, $public_pages)
 
     $token = $_COOKIE['auth_token'];
     $auth = executeQuery(
-        'SELECT user_id, expires_at, remember_me FROM auth_tokens WHERE token = ?',
+        'SELECT id, expires_at, remember_me FROM auth_tokens WHERE token = ?',
         [$token],
         'one'
     );
@@ -180,7 +180,7 @@ function handle_page_request($path, $pages, $public_pages)
     if (isset($_SESSION['user_id']) && isset($_COOKIE['auth_token']))
         // 檢查 remember_me 狀態
         $check = executeQuery(
-            'SELECT remember_me FROM auth_tokens WHERE user_id = ?',
+            'SELECT remember_me FROM auth_tokens WHERE id = ?',
             [$_SESSION['user_id']]
         );
     if (in_array($path, $public_pages) && isset($_SESSION['user_id']) && isset($_COOKIE['auth_token']) && $check['remember_me'] == 1) {
