@@ -29,12 +29,12 @@ switch ($action) {
         $remember_me = isset($_POST['remember_me']) && $_POST['remember_me'] === 'on';
 
         if (empty($username) || empty($password)) {
-            echo json_encode(['error' => '請輸入用戶名和密碼']);
+            echo json_encode(['status'=>'error','error' => '請輸入用戶名和密碼']);
             exit;
         }
 
         if (!isset($_SESSION['_authnum']) || md5($captcha) !== $_SESSION['_authnum']) {
-            echo json_encode(['error' => '驗證碼錯誤']);
+            echo json_encode(['status'=>'error','error' => '驗證碼錯誤']);
             exit;
         }
 
@@ -45,7 +45,7 @@ switch ($action) {
         );
 
         if (!$user || !password_verify($password, $user['password'])) {
-            echo json_encode(['error' => '用戶名或密碼錯誤']);
+            echo json_encode(['status'=>'error','error' => '用戶名或密碼錯誤']);
             exit;
         }
 
@@ -105,6 +105,7 @@ switch ($action) {
             ]);
             $_SESSION['first_login'] = true;
         }
+        //echo json_encode(['status' => 'success', 'message' => '登入成功']);
         header('Location: /tracking');
         //echo json_encode(['status' => 'success']);
         exit;
@@ -276,6 +277,7 @@ switch ($action) {
             echo json_encode(['status' => 'error', 'message' => '兌換失敗: ' . $e->getMessage()]);
         }
         exit;
+   
     default:
         header('Location: ' . $_SERVER['HTTP_REFERER'] ?: '/');
         exit;

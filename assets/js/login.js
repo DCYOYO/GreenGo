@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const errorContainer = document.getElementById('error-container');
             errorContainer.innerHTML = ''; // 清除舊錯誤
             const formData = new FormData(loginForm);
-            fetch('/api/backend.php', {
+            fetch('/api/backend', {
                 method: 'POST',
                 body: formData
             })
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const errorContainer = document.getElementById('error-container');
             errorContainer.innerHTML = ''; // 清除舊錯誤
             const formData = new FormData(registerForm);
-            fetch('/api/backend.php', {
+            fetch('/api/backend', {
                 method: 'POST',
                 body: formData
             })

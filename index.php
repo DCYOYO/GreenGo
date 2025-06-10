@@ -11,7 +11,7 @@ ini_set('session.gc_probability', 1);
 ini_set('session.gc_divisor', 100);
 
 // 設定區
-define('DEBUG_MODE', false);
+define('DEBUG_MODE', true);
 define('CONTROLLER_PATH', __DIR__ . '/pages/php/');
 define('TEMPLATE_PATH', __DIR__ . '/pages/html/');
 

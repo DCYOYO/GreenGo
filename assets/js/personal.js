@@ -66,7 +66,7 @@ document.getElementById('edit-profile-form')?.addEventListener('submit', async f
     const formData = new FormData(form);
 
     try {
-        const res = await fetch(window.location.href, {
+        const res = await fetch('/personal', {
             method: 'POST',
             body: formData
         });

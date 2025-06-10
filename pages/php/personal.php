@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../api/db.php';
 
+
 if (!isset($_SESSION['user_id']) && !isset($_COOKIE['auth_token'])) {
     header('Location: /');
     exit;
@@ -64,6 +65,7 @@ if ($user_data) {
 }
 
 if ($method === 'POST' && $data['is_owner']) {
+    header('Content-Type: application/json; charset=UTF-8');
     $action = $_POST['action'] ?? '';
 
     if ($action === 'upload_avatar' && isset($_FILES['avatar'])) {
@@ -99,9 +101,9 @@ if ($method === 'POST' && $data['is_owner']) {
         $activity_level = trim($_POST['activity_level'] ?? '');
 
         $bio = strlen($bio) > 500 ? substr($bio, 0, 500) : $bio;
-        $allowed_countries = ['台灣', '美國', '日本'];
-        $allowed_genders = ['不公開', '男', '女', '其他'];
-        $allowed_activity_levels = ['不公開', '低', '中', '高'];
+        $allowed_countries = ['TW', 'US', 'JP'];
+        $allowed_genders = ['', 'M', 'F', 'Other'];
+        $allowed_activity_levels = ['', 'Loe', 'Medium', 'High'];
 
         if (!in_array($country_code, $allowed_countries)) {
             $country_code = '';
