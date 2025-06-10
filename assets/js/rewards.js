@@ -1,5 +1,5 @@
 function redeemReward(rewardId) {
-    fetch('/api/backend.php', {
+    fetch('/api/backend', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'redeem', reward_id: rewardId })

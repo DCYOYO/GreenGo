@@ -44,7 +44,7 @@ function handleSubmit() {
   };
   history.unshift(record);
   console.log("發送資料：", record);
-  fetch('/api/backend.php', {
+  fetch('/api/backend', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -129,7 +129,7 @@ function stopTracking() {
     };
     history.unshift(record);
     console.log("發送資料：", record);
-    fetch('/api/backend.php', {
+    fetch('/api/backend', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -295,7 +295,7 @@ function calculateRoute() {
         console.log("發送資料：", record);
 
         // 發送記錄到後端 API
-        fetch('/api/backend.php', {
+        fetch('/api/backend', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
