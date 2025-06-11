@@ -20,7 +20,6 @@ if (empty($_POST)) {
 }
 $action = isset($_POST['action']) ? $_POST['action'] : '';
 
-
 switch ($action) {
     case 'login':
         $username = trim($_POST['username'] ?? '');
@@ -29,12 +28,12 @@ switch ($action) {
         $remember_me = isset($_POST['remember_me']) && $_POST['remember_me'] === 'on';
 
         if (empty($username) || empty($password)) {
-            echo json_encode(['status' => 'error', 'error' => '請輸入用戶名和密碼']);
+            echo json_encode(['status' => 'error', 'message' => '請輸入用戶名和密碼']);
             exit;
         }
 
         if (!isset($_SESSION['_authnum']) || md5($captcha) !== $_SESSION['_authnum']) {
-            echo json_encode(['status' => 'error', 'error' => '驗證碼錯誤']);
+            echo json_encode(['status' => 'error', 'message' => '驗證碼錯誤']);
             exit;
         }
 
@@ -45,7 +44,7 @@ switch ($action) {
         );
 
         if (!$user || !password_verify($password, $user['password'])) {
-            echo json_encode(['status' => 'error', 'error' => '用戶名或密碼錯誤']);
+            echo json_encode(['status' => 'error', 'message' => '用戶名或密碼錯誤']);
             exit;
         }
 
@@ -70,13 +69,13 @@ switch ($action) {
         session_regenerate_id(true);
         $token = bin2hex(random_bytes(32));
         $expires_at = (new DateTime())->modify('+30 days')->format('Y-m-d H:i:s');
-        if ($remember_me) {
 
+        if ($remember_me) {
+            echo json_encode(['status' => 'success', 'message' => '登入成功', 'redirect' => '/tracking']);
             executeNonQuery(
                 'INSERT INTO auth_tokens (id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
                 [$user['id'], $token, $expires_at, 1]
             );
-
             setcookie('auth_token', $token, [
                 'expires' => time() + (30 * 24 * 3600),
                 'path' => '/',
@@ -84,18 +83,21 @@ switch ($action) {
                 'secure' => false,
                 'samesite' => 'Strict'
             ]);
+            
         } else {
+            echo json_encode(['status' => 'success', 'message' => '登入成功', 'redirect' => '/tracking']);
             if (executeQuery(
                 'SELECT token FROM auth_tokens WHERE id = ? AND remember_me = 0',
                 [$user['id']],
                 'one'
             )) {
-                executeNonQuery('UPDATE user_id=?,token=?,expires_at=?,remember_me=? WHERE user_id=? AND remember_me=0', [$user['id'], $token, $expires_at, 0, $user['id']]);
-            } else
+                executeNonQuery('UPDATE auth_tokens SET token = ?, expires_at = ?, remember_me = ? WHERE id = ? AND remember_me = 0', [$token, $expires_at, 0, $user['id']]);
+            } else {
                 executeNonQuery(
                     'INSERT INTO auth_tokens (id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
                     [$user['id'], $token, $expires_at, 0]
                 );
+            }
             setcookie('auth_token', $token, [
                 'expires' => 0,
                 'path' => '/',
@@ -104,11 +106,10 @@ switch ($action) {
                 'samesite' => 'Strict'
             ]);
             $_SESSION['first_login'] = true;
+            
         }
-        //echo json_encode(['status' => 'success', 'message' => '登入成功']);
-        header('Location: /tracking');
-        //echo json_encode(['status' => 'success']);
         exit;
+
 
     case 'logout':
         if (isset($_COOKIE['auth_token'])) {
@@ -120,6 +121,7 @@ switch ($action) {
         if (isset($_COOKIE[session_name()])) {
             setcookie(session_name(), '', time() - 3600, '/', '', false, true);
         }
+        //echo json_encode(['status' => 'success', 'message' => '已登出', 'redirect' => '/']);
         header('Location: /');
         exit;
 
@@ -129,17 +131,17 @@ switch ($action) {
         $password_confirm = $_POST['password_confirm'] ?? '';
 
         if (empty($username) || empty($password) || empty($password_confirm)) {
-            echo json_encode(['error' => '請填寫所有欄位']);
+            echo json_encode(['status' => 'error', 'message' => '請填寫所有欄位']);
             exit;
         }
 
         if ($password !== $password_confirm) {
-            echo json_encode(['error' => '密碼不一致']);
+            echo json_encode(['status' => 'error', 'message' => '密碼不一致']);
             exit;
         }
 
         if (strlen($username) < 3) {
-            echo json_encode(['error' => '用戶名需至少3個字符']);
+            echo json_encode(['status' => 'error', 'message' => '用戶名需至少3個字符']);
             exit;
         }
 
@@ -149,7 +151,7 @@ switch ($action) {
             'one'
         );
         if ($existing_user) {
-            echo json_encode(['error' => '用戶名已存在']);
+            echo json_encode(['status' => 'error', 'message' => '用戶名已存在']);
             exit;
         }
 
@@ -166,16 +168,16 @@ switch ($action) {
                 [$username]
             );
             $pdo->commit();
-            echo json_encode(['status' => 'success', 'message' => '註冊成功，請登入']);
+            echo json_encode(['status' => 'success', 'message' => '註冊成功，請登入', 'redirect' => '/']);
         } catch (PDOException $e) {
             $pdo->rollback();
-            echo json_encode(['error' => '註冊失敗: ' . $e->getMessage()]);
+            echo json_encode(['status' => 'error', 'message' => '註冊失敗: ' . $e->getMessage()]);
         }
         exit;
 
     case 'record':
         if (!isset($_SESSION['user_id'])) {
-            echo json_encode(['error' => '請先登入']);
+            echo json_encode(['status' => 'error', 'message' => '請先登入']);
             exit;
         }
 
@@ -277,6 +279,7 @@ switch ($action) {
             echo json_encode(['status' => 'error', 'message' => '兌換失敗: ' . $e->getMessage()]);
         }
         exit;
+
     case 'upload_avatar':
         if (!isset($_SESSION['user_id'])) {
             echo json_encode(['status' => 'error', 'message' => '請先登入']);
@@ -370,44 +373,41 @@ switch ($action) {
         $pdo = getPDO();
         try {
             $pdo->beginTransaction();
-            if(executeNonQuery('SELECT FROM personal_page WHERE id = ?',[$_SESSION['user_id']])) {
+            if (executeQuery('SELECT id FROM personal_page WHERE id = ?', [$_SESSION['user_id']], 'one')) {
                 executeNonQuery(
-                'INSERT INTO personal_page (id,username, bio, country_code, city, gender, birthdate, activity_level, last_update)
-                 VALUES ((SELECT username FROM users WHERE id = ?),?, ?, ?, ?, ?, ?, ?, NOW())
-                 ON DUPLICATE KEY UPDATE 
-                 bio = ?, country_code = ?, city = ?, gender = ?, birthdate = ?, activity_level = ?, last_update = NOW()',
-                [
-                    $_SESSION['user_id'],
-                    $_SESSION['user_id'],
-                    $bio,
-                    $country_code,
-                    $city,
-                    $gender,
-                    $birthdate,
-                    $activity_level,
-                    $bio,
-                    $country_code,
-                    $city,
-                    $gender,
-                    $birthdate,
-                    $activity_level
-                ]
+                    'INSERT INTO personal_page (id, username, bio, country_code, city, gender, birthdate, activity_level, last_update)
+                     VALUES (?, (SELECT username FROM users WHERE id = ?), ?, ?, ?, ?, ?, ?, NOW())
+                     ON DUPLICATE KEY UPDATE 
+                     bio = VALUES(bio), country_code = VALUES(country_code), city = VALUES(city), 
+                     gender = VALUES(gender), birthdate = VALUES(birthdate), activity_level = VALUES(activity_level), 
+                     last_update = VALUES(last_update)',
+                    [
+                        $_SESSION['user_id'],
+                        $_SESSION['user_id'],
+                        $bio,
+                        $country_code,
+                        $city,
+                        $gender,
+                        $birthdate,
+                        $activity_level
+                    ]
                 );
             } else {
-                executeNonQuery('UPDATE personal_page SET id=?,username=?, bio=?, country_code=?, city=?, gender=?, birthdate=?, activity_level=?, last_update=NOW() WHERE id = ?',
-                [
-                    $_SESSION['user_id'],
-                    $_SESSION['username'],
-                    $bio,
-                    $country_code,
-                    $city,
-                    $gender,
-                    $birthdate,
-                    $activity_level,
-                    $_SESSION['user_id']
-                ]);
+                executeNonQuery(
+                    'INSERT INTO personal_page (id, username, bio, country_code, city, gender, birthdate, activity_level, last_update)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+                    [
+                        $_SESSION['user_id'],
+                        $_SESSION['username'],
+                        $bio,
+                        $country_code,
+                        $city,
+                        $gender,
+                        $birthdate,
+                        $activity_level
+                    ]
+                );
             }
-            
             $pdo->commit();
             echo json_encode(['status' => 'success', 'message' => '個人資料更新成功']);
         } catch (PDOException $e) {
@@ -417,6 +417,6 @@ switch ($action) {
         exit;
 
     default:
-        header('Location: ' . $_SERVER['HTTP_REFERER'] ?: '/');
+        echo json_encode(['status' => 'error', 'message' => '無效的操作']);
         exit;
 }

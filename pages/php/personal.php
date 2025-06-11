@@ -6,11 +6,11 @@ if (!isset($_SESSION['user_id']) && !isset($_COOKIE['auth_token'])) {
     exit;
 }
 
-$search_username = trim($_GET['username'] ?? '');
+$search_username = trim($_POST['username'] ?? '');
 $target_user_id = null;
 $data = [
     'error' => null,
-    'username' => $_SESSION['username'],
+    'username' =>empty($search_username)??$_SESSION['username'],
     'is_owner' => true,
     'user' => [],
     'csrf_token' => generate_csrf_token()
