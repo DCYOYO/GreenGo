@@ -97,10 +97,11 @@
 
         <!-- Avatar Upload (only for profile owner) -->
         <?php if ($data['is_owner'] && !empty($data['user'])): ?>
+            <button id="show-upload-avatar-btn" class="btn btn-primary mb-3">上傳頭像</button>
             <div class="card mb-4">
                 <div class="card-body">
                     <h5>上傳頭像</h5>
-                    <form id="avatar-form" enctype="multipart/form-data">
+                    <form id="avatar-form" enctype="multipart/form-data" class="hidden-form">
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($data['csrf_token']); ?>">
                         <input type="hidden" name="action" value="upload_avatar">
                         <div class="mb-3">
@@ -113,11 +114,13 @@
                 </div>
             </div>
 
+            
             <!-- Profile Edit -->
+            <button id="show-update-profile-btn" class="btn btn-primary mb-3">編輯個人資料</button>
             <div class="card">
                 <div class="card-body">
                     <h5>編輯個人資料</h5>
-                    <form id="profile-form">
+                    <form id="profile-form" class="hidden-form">
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($data['csrf_token']); ?>">
                         <input type="hidden" name="action" value="update_profile">
                         <div class="mb-3">
