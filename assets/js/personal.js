@@ -7,7 +7,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarImg = document.querySelector('#avatar-img');
     const avatarError = document.querySelector('#avatar-error');
     const profileError = document.querySelector('#profile-error');
+    // 顯示上傳頭像表單
+    showUploadAvatarBtn.addEventListener('click', () => {
+        uploadAvatarForm.classList.toggle('hidden-form');
+        if (!uploadAvatarForm.classList.contains('hidden-form')) {
+            avatarInput.focus();
+        }
+    });
 
+    // 顯示編輯個人資料表單
+    showUpdateProfileBtn.addEventListener('click', () => {
+        updateProfileForm.classList.toggle('hidden-form');
+        if (!updateProfileForm.classList.contains('hidden-form')) {
+            document.getElementById('bio-input').focus();
+        }
+    });
     // Country-City dynamic update
     if (countrySelect && citySelect) {
         const cityOptions = {

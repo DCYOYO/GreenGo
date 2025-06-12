@@ -27,7 +27,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="/tracking">追蹤</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/tracking">追蹤</a></li>
                     <li class="nav-item"><a class="nav-link" href="/history">歷史紀錄</a></li>
                     <li class="nav-item"><a class="nav-link" href="/leaderboard">排行榜</a></li>
                     <li class="nav-item"><a class="nav-link" href="/rewards">獎勵</a></li>
@@ -39,7 +39,7 @@
                     </div>
                     <span class="me-3 fw-bold">
                         <ul class="navbar-nav ms-auto mr-4">
-                            <li class="nav-item"><a class="nav-link" href="/personal"><?php echo safe_output($username); ?></a></li>
+                            <li class="nav-item"><a class="nav-link active" href="/personal"><?php echo safe_output($username); ?></a></li>
                         </ul>
                     </span>
                     <input type="hidden" name="action" value="logout">
@@ -51,7 +51,7 @@
         <h2 class="mb-4">個人主頁查詢</h2>
 
         <!-- Search Form -->
-        <form class="form-section" action="/personal" method="GET">
+        <form class="form-section" action="/personal" method="POST">
             <div class="input-group mb-3">
                 <input type="text" name="username" class="form-control" placeholder="輸入用戶名查詢" value="<?php echo htmlspecialchars($data['username'] ?? ''); ?>">
                 <button type="submit" class="btn" style="background-color: rgb(79, 110, 209);color: aliceblue;">查詢</button>
@@ -97,10 +97,11 @@
 
         <!-- Avatar Upload (only for profile owner) -->
         <?php if ($data['is_owner'] && !empty($data['user'])): ?>
+            <button id="show-upload-avatar-btn" class="btn btn-primary mb-3">上傳頭像</button>
             <div class="card mb-4">
                 <div class="card-body">
                     <h5>上傳頭像</h5>
-                    <form id="avatar-form" enctype="multipart/form-data">
+                    <form id="avatar-form" enctype="multipart/form-data" class="hidden-form">
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($data['csrf_token']); ?>">
                         <input type="hidden" name="action" value="upload_avatar">
                         <div class="mb-3">
@@ -113,11 +114,13 @@
                 </div>
             </div>
 
+            
             <!-- Profile Edit -->
+            <button id="show-update-profile-btn" class="btn btn-primary mb-3">編輯個人資料</button>
             <div class="card">
                 <div class="card-body">
                     <h5>編輯個人資料</h5>
-                    <form id="profile-form">
+                    <form id="profile-form" class="hidden-form">
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($data['csrf_token']); ?>">
                         <input type="hidden" name="action" value="update_profile">
                         <div class="mb-3">
