@@ -240,7 +240,7 @@ switch ($action) {
         $reward_id = intval($_POST['reward_id'] ?? 0);
 
         $reward = executeQuery(
-            'SELECT name, points_required FROM rewards WHERE id = ?',
+            'SELECT name, points_required FROM rewards WHERE reward_id = ?',
             [$reward_id],
             'one'
         );

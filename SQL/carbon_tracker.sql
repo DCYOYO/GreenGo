@@ -89,7 +89,7 @@ CREATE TABLE `redeem_history` (
 
 DROP TABLE IF EXISTS `rewards`;
 CREATE TABLE `rewards` (
-  `id` int(11) NOT NULL,
+  `reward_id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
   `points_required` int(11) NOT NULL,
   `description` text DEFAULT NULL
@@ -99,7 +99,7 @@ CREATE TABLE `rewards` (
 -- 傾印資料表的資料 `rewards`
 --
 
-INSERT INTO `rewards` (`id`, `name`, `points_required`, `description`) VALUES
+INSERT INTO `rewards` (`reward_id`, `name`, `points_required`, `description`) VALUES
 (1, '環保袋', 50, '一個可重複使用的環保袋，減少塑膠袋使用'),
 (2, '腳踏車租借券', 100, '免費租借腳踏車一天，享受低碳出行'),
 (3, '綠色生活套裝', 200, '包含環保吸管、餐具和水壺的套裝'),
@@ -185,7 +185,7 @@ ALTER TABLE `redeem_history`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `auth_tokens`
 --
 ALTER TABLE `rewards`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`reward_id`);
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `personal_page`
 --

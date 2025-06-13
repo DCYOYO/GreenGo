@@ -32,14 +32,26 @@ if (!empty($search_username)) {
 
     $target_user_id = $target_user['id'];
     $data['is_owner'] = $target_user_id === $user_id;
+    $data['username']=$search_username;
 } else {
     $target_user_id = $user_id;
 }
 
 $user_data = executeQuery(
-    'SELECT u.username, u.total_points, u.total_footprint, p.bio, p.country_code, p.city, p.gender, p.birthdate, p.activity_level, p.last_update 
-     FROM users u 
-     LEFT JOIN personal_page p ON u.username = p.username 
+    'SELECT 
+        u.username,
+        COALESCE(SUM(tr.points), 0) AS total_points,
+        COALESCE(SUM(tr.footprint), 0) AS total_footprint,
+        p.bio,
+        p.country_code,
+        p.city,
+        p.gender,
+        p.birthdate,
+        p.activity_level,
+        p.last_update
+     FROM users u
+     LEFT JOIN personal_page p ON u.username = p.username
+     LEFT JOIN travel_records tr ON tr.user_id = u.id
      WHERE u.id = ?',
     [$target_user_id],
     'one'

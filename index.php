@@ -186,7 +186,7 @@ function handle_page_request($path, $pages, $public_pages)
     if (in_array($path, $public_pages) && isset($_SESSION['user_id']) && isset($_COOKIE['auth_token']) && $check['remember_me'] == 1) {
         header('Location: /tracking');
         exit;
-    } else if ((in_array($path, $public_pages) && isset($_SESSION['user_id']) && isset($_COOKIE['auth_token']) && $check['remember_me'] == 0 && $path == '' )|| (in_array($path, $public_pages) && isset($_SESSION['user_id']) && isset($_COOKIE['auth_token']) && $check['remember_me'] == 0 &&isset($_SESSION['first_login'])&& $path == '')) {
+    } else if ((in_array($path, $public_pages) && isset($_SESSION['user_id']) && isset($_COOKIE['auth_token']) && $check['remember_me'] == 0 )|| (in_array($path, $public_pages) && isset($_SESSION['user_id']) && isset($_COOKIE['auth_token']) && $check['remember_me'] == 0 &&isset($_SESSION['first_login'])&& $path == '')) {
         if (isset($_SESSION['first_login']) && $_SESSION['first_login'] == true) {
             unset($_SESSION['first_login']);
         } else {

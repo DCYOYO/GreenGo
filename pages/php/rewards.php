@@ -13,7 +13,7 @@ $user = executeQuery(
 );
 
 $rewards = executeQuery(
-    'SELECT id, name, points_required, description 
+    'SELECT reward_id, name, points_required, description 
      FROM rewards 
      ORDER BY points_required ASC',
     [],
@@ -36,7 +36,7 @@ foreach ($rewards as &$reward) {
             "<h6 class='card-title'>" . htmlspecialchars($reward['name']) . "</h6>" .
             "<p class='card-text'>需要" . htmlspecialchars($reward['points_required']) . "</p>" .
             "<p class='card-text'>" . htmlspecialchars($reward['description']) . "</p>" .
-            "<button class='btn btn-primary' onclick=\"redeemReward(" . $reward['id'] . ")\">兌換</button>" .
+            "<button class='btn btn-primary' onclick=\"redeemReward(" . $reward['reward_id'] . ")\">兌換</button>" .
             "</div>";
     $count++;
 }
