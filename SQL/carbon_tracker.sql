@@ -49,12 +49,11 @@ CREATE TABLE `personal_page` (
   `id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL COMMENT '關聯的使用者名稱',
   `bio` text DEFAULT NULL COMMENT '個人簡介',
-  `profile_picture` varchar(255) DEFAULT NULL COMMENT '圖片路徑',
-  `country_code` char(2) DEFAULT NULL COMMENT '國家代碼',
-  `city` varchar(100) DEFAULT NULL COMMENT '城市',
-  `gender` enum('M','F','Other') DEFAULT NULL COMMENT '性別',
+  `country_code` nvarchar(10) DEFAULT NULL COMMENT '國家名稱',
+  `city` nvarchar(10) DEFAULT NULL COMMENT '城市',
+  `gender` enum('男','女','其他') DEFAULT NULL COMMENT '性別',
   `birthdate` date DEFAULT NULL COMMENT '生日',
-  `activity_level` enum('Low','Medium','High') DEFAULT NULL COMMENT '活躍程度',
+  `activity_level` enum('低','中','高') DEFAULT NULL COMMENT '活躍程度',
   `created_at` datetime NOT NULL DEFAULT current_timestamp() COMMENT '建立時間',
   `last_update` datetime DEFAULT NULL COMMENT '上次更新時間'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -63,8 +62,8 @@ CREATE TABLE `personal_page` (
 -- 傾印資料表的資料 `personal_page`
 --
 
-INSERT INTO `personal_page` (`id`, `username`, `bio`, `profile_picture`, `country_code`, `city`, `gender`, `birthdate`, `activity_level`, `created_at`, `last_update`) VALUES
-(1, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:02', NULL);
+INSERT INTO `personal_page` (`id`, `username`, `bio`, `country_code`, `city`, `gender`, `birthdate`, `activity_level`, `created_at`, `last_update`) VALUES
+(1, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:02', NULL);
 
 -- --------------------------------------------------------
 
@@ -174,11 +173,19 @@ ALTER TABLE `users`
 --
 -- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
 --
+ALTER TABLE `travel_records`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
 
+ALTER TABLE `redeem_history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `reward_id` (`reward_id`);
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `auth_tokens`
 --
-
+ALTER TABLE `rewards`
+  ADD PRIMARY KEY (`id`);
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `personal_page`
 --
@@ -194,7 +201,8 @@ ALTER TABLE `users`
 --
 -- 已傾印資料表的限制式
 --
-
+ALTER TABLE `travel_records`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 --
 -- 資料表的限制式 `auth_tokens`
 --

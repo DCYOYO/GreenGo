@@ -7,24 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarImg = document.querySelector('#avatar-img');
     const avatarError = document.querySelector('#avatar-error');
     const profileError = document.querySelector('#profile-error');
-    const showAvatarFormBtn = document.querySelector('#show-avatar-form-btn');
-    const showProfileFormBtn = document.querySelector('#show-profile-form-btn');
 
-    // 顯示上傳頭像表單
-    showAvatarFormBtn.addEventListener('click', () => {
-        avatarForm.classList.toggle('hidden-form');
-        if (!avatarForm.classList.contains('hidden-form')) {
-            avatarInput.focus();
-        }
-    });
-
-    // 顯示編輯個人資料表單
-    showProfileFormBtn.addEventListener('click', () => {
-        profileForm.classList.toggle('hidden-form');
-        if (!profileForm.classList.contains('hidden-form')) {
-            countrySelect.focus();
-        }
-    });
     // Country-City dynamic update
     if (countrySelect && citySelect) {
         const cityOptions = {
