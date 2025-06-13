@@ -7,19 +7,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarImg = document.querySelector('#avatar-img');
     const avatarError = document.querySelector('#avatar-error');
     const profileError = document.querySelector('#profile-error');
+    const showAvatarFormBtn = document.querySelector('#show-avatar-form-btn');
+    const showProfileFormBtn = document.querySelector('#show-profile-form-btn');
+
     // 顯示上傳頭像表單
-    showUploadAvatarBtn.addEventListener('click', () => {
-        uploadAvatarForm.classList.toggle('hidden-form');
-        if (!uploadAvatarForm.classList.contains('hidden-form')) {
+    showAvatarFormBtn.addEventListener('click', () => {
+        avatarForm.classList.toggle('hidden-form');
+        if (!avatarForm.classList.contains('hidden-form')) {
             avatarInput.focus();
         }
     });
 
     // 顯示編輯個人資料表單
-    showUpdateProfileBtn.addEventListener('click', () => {
-        updateProfileForm.classList.toggle('hidden-form');
-        if (!updateProfileForm.classList.contains('hidden-form')) {
-            document.getElementById('bio-input').focus();
+    showProfileFormBtn.addEventListener('click', () => {
+        profileForm.classList.toggle('hidden-form');
+        if (!profileForm.classList.contains('hidden-form')) {
+            countrySelect.focus();
         }
     });
     // Country-City dynamic update

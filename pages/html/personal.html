@@ -11,6 +11,9 @@
         .error-message { display: none; color: red; margin-top: 10px; }
         .avatar-img { max-width: 150px; border-radius: 50%; }
         .form-section { margin-bottom: 20px; }
+        .hidden-form {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-dark text-light mb-5">
@@ -98,10 +101,10 @@
         <!-- Avatar Upload (only for profile owner) -->
         <?php if ($data['is_owner'] && !empty($data['user'])): ?>
             <button id="show-upload-avatar-btn" class="btn btn-primary mb-3">上傳頭像</button>
-            <div class="card mb-4">
+            <div class="card mb-4" class="hidden-form"  >
                 <div class="card-body">
                     <h5>上傳頭像</h5>
-                    <form id="avatar-form" enctype="multipart/form-data" class="hidden-form">
+                    <form id="avatar-form" enctype="multipart/form-data"  >
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($data['csrf_token']); ?>">
                         <input type="hidden" name="action" value="upload_avatar">
                         <div class="mb-3">
@@ -117,10 +120,10 @@
             
             <!-- Profile Edit -->
             <button id="show-update-profile-btn" class="btn btn-primary mb-3">編輯個人資料</button>
-            <div class="card">
+            <div class="card" class="hidden-form" >
                 <div class="card-body">
                     <h5>編輯個人資料</h5>
-                    <form id="profile-form" class="hidden-form">
+                    <form id="profile-form"  >
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($data['csrf_token']); ?>">
                         <input type="hidden" name="action" value="update_profile">
                         <div class="mb-3">
