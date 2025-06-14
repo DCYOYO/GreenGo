@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     data = text ? JSON.parse(text) : {};
                 } catch (e) {
-                    errorContainer.innerHTML = '<p>回應格式錯誤，請聯繫管理員</p>';
+                    alert('回應格式錯誤，請聯繫管理員');
                     return;
                 }
                 if (data.status === 'success') {
@@ -79,11 +79,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.location.href = '/'; // 後備重定向
                     }
                 } else {
-                    errorContainer.innerHTML = `<p>${data.message || '未知錯誤'}</p>`;
+                    alert(`${data.message || '未知錯誤'}`);
                 }
             })
             .catch(error => {
-                errorContainer.innerHTML = `<p>註冊失敗：${error.message}</p>`;
+                alert(`註冊失敗：${error.message}`);
             });
         });
     }
