@@ -20,7 +20,7 @@ $user_id = $_SESSION['user_id'];
 
 if (!empty($search_username)) {
     $target_user = executeQuery(
-        'SELECT id FROM users WHERE username = ?',
+        'SELECT user_id FROM users WHERE username = ?',
         [$search_username],
         'one'
     );
@@ -30,7 +30,7 @@ if (!empty($search_username)) {
         return $data;
     }
 
-    $target_user_id = $target_user['id'];
+    $target_user_id = $target_user['user_id'];
     $data['is_owner'] = $target_user_id === $user_id;
     $data['username']=$search_username;
 } else {
@@ -51,8 +51,8 @@ $user_data = executeQuery(
         p.last_update
      FROM users u
      LEFT JOIN personal_page p ON u.username = p.username
-     LEFT JOIN travel_records tr ON tr.user_id = u.id
-     WHERE u.id = ?',
+     LEFT JOIN travel_records tr ON tr.user_id = u.user_id
+     WHERE u.user_id = ?',
     [$target_user_id],
     'one'
 );

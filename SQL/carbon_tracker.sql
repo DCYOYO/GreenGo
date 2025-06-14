@@ -63,7 +63,16 @@ CREATE TABLE `personal_page` (
 --
 
 INSERT INTO `personal_page` (`id`, `username`, `bio`, `country_code`, `city`, `gender`, `birthdate`, `activity_level`, `created_at`, `last_update`) VALUES
-(1, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:02', NULL);
+(1, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:02', NULL),
+(2, 'bbb', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:03', NULL),
+(3, 'ccc', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:04', NULL),
+(4, 'ddd', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:05', NULL),
+(5, 'eee', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:06', NULL),
+(6, 'fff', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:07', NULL),
+(7, 'ggg', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:08', NULL),
+(8, 'hhh', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:09', NULL),
+(9, 'iii', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:10', NULL),
+(10,'jjj', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:11', NULL);
 
 -- --------------------------------------------------------
 
@@ -103,9 +112,28 @@ INSERT INTO `rewards` (`reward_id`, `name`, `points_required`, `description`) VA
 (1, '環保袋', 50, '一個可重複使用的環保袋，減少塑膠袋使用'),
 (2, '腳踏車租借券', 100, '免費租借腳踏車一天，享受低碳出行'),
 (3, '綠色生活套裝', 200, '包含環保吸管、餐具和水壺的套裝'),
-(4, '環保袋', 50, '一個可重複使用的環保袋，減少塑膠袋使用'),
-(5, '腳踏車租借券', 100, '免費租借腳踏車一天，享受低碳出行'),
-(6, '綠色生活套裝', 200, '包含環保吸管、餐具和水壺的套裝');
+(4, '樹木種植券', 300, '一張種植樹木的券，為地球增添綠意'),
+(5, '可持續旅遊指南', 150, '一本介紹可持續旅遊的電子書'),
+(6, '碳足跡計算器', 80, '一個幫助你計算日常活動碳足跡的應用程式'),
+(7, '環保手冊', 120, '一本介紹如何在日常生活中實踐環保的手冊'),
+(8, '綠色餐廳優惠券', 70, '可在指定綠色餐廳使用的優惠券'),
+(9, '可持續時尚折扣券', 90, '在可持續時尚品牌購物時使用的折扣券'),
+(10, '生態旅遊體驗券', 250, '一張生態旅遊體驗券，享受自然之美'),
+(11, '環保清潔產品套裝', 180, '一套環保清潔產品，安全無害'),
+(12, '綠色科技產品折扣券', 110, '在綠色科技產品購物時使用的折扣券'),
+(13, '可持續農業體驗券', 220, '參加可持續農業體驗活動的券'),
+(14, '環保藝術品', 400, '一件由回收材料製作的藝術品'),
+(15, '綠色出行指南', 130, '一本介紹低碳出行方式的指南'),
+(16, '環保教育課程', 300, '參加線上環保教育課程的券'),
+(17, '可持續生活工作坊', 350, '參加可持續生活工作坊的券'),
+(18, '綠色科技產品', 500, '一件最新的綠色科技產品'),
+(19, '環保旅行套裝', 600, '包含環保旅行用品的套裝'),
+(20, '碳中和計劃參與券', 700, '參與碳中和計劃的券'),
+(21, '綠色社區活動參與券', 800, '參加當地綠色社區活動的券'),
+(22, '可持續生活指南', 900, '一本介紹如何實踐可持續生活的指南'),
+(23, '環保科技產品', 1000, '一件最新的環保科技產品'),
+(24, '綠色出行體驗券', 1100, '體驗綠色出行方式的券'),
+(25, '碳足跡減少計劃參與券', 1200, '參與碳足跡減少計劃的券');
 
 -- --------------------------------------------------------
 
@@ -132,19 +160,26 @@ CREATE TABLE `travel_records` (
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `total_points` int(11) DEFAULT 0,
-  `total_footprint` float DEFAULT 0
+  `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- 傾印資料表的資料 `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `password`, `total_points`, `total_footprint`) VALUES
-(1, 'aaa', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i', 0, 0);
+INSERT INTO `users` (`user_id`, `username`, `password`) VALUES
+(1, 'aaa', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
+(2, 'bbb', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
+(3, 'ccc', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
+(4, 'ddd', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
+(5, 'eee', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
+(6, 'fff', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
+(7, 'ggg', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
+(8, 'hhh', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
+(9, 'iii', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
+(10, 'jjj', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i');
 
 --
 -- 已傾印資料表的索引
@@ -167,7 +202,7 @@ ALTER TABLE `personal_page`
 -- 資料表索引 `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
+  ADD PRIMARY KEY (`user_id`),
   ADD UNIQUE KEY `username` (`username`);
 
 --
@@ -196,7 +231,7 @@ ALTER TABLE `personal_page`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- 已傾印資料表的限制式
@@ -206,7 +241,9 @@ ALTER TABLE `travel_records`
 --
 -- 資料表的限制式 `auth_tokens`
 --
-
+ALTER TABLE `redeem_history`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+--
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

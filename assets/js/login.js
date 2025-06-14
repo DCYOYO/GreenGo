@@ -20,12 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 return response.text(); // 獲取原始文字
             })
             .then(text => {
-                console.log('Raw response:', text); // 調試用
                 let data;
                 try {
                     data = text ? JSON.parse(text) : {};
                 } catch (e) {
-                    console.error('JSON parse error:', e);
                     //errorContainer.innerHTML = '<p>回應格式錯誤，請聯繫管理員</p>';
                     window.location.href = '/';
                     return;
@@ -43,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .catch(error => {
-                console.error('Fetch error:', error);
                 alert(`登入失敗：${error.message}`);
             });
         });
@@ -67,12 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 return response.text(); // 獲取原始文字
             })
             .then(text => {
-                console.log('Raw response:', text); // 調試用
                 let data;
                 try {
                     data = text ? JSON.parse(text) : {};
                 } catch (e) {
-                    console.error('JSON parse error:', e);
                     errorContainer.innerHTML = '<p>回應格式錯誤，請聯繫管理員</p>';
                     return;
                 }
@@ -88,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .catch(error => {
-                console.error('Fetch error:', error);
                 errorContainer.innerHTML = `<p>註冊失敗：${error.message}</p>`;
             });
         });

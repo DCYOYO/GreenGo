@@ -43,7 +43,6 @@ function handleSubmit() {
     record_time: new Date().toISOString()
   };
   history.unshift(record);
-  console.log("發送資料：", record);
   fetch('/api/backend', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -56,22 +55,17 @@ function handleSubmit() {
     })
   })
   .then(response => {
-    console.log("儲存紀錄 - HTTP 狀態碼：", response.status);
     return response.json();
   })
   .then(data => {
-    console.log('儲存紀錄 - 後端回應：', data);
     if (data.status === 'success') {
-      console.log('資料儲存成功');
       alert(`這次${selectedTransport}移動獲得 ${pointsEarned} 點！`);
       suggestEcoPath(selectedTransport);
     } else {
-      console.error('儲存資料失敗:', data.message);
       alert('儲存資料失敗：' + data.message);
     }
   })
   .catch(error => {
-    console.error('傳送錯誤:', error);
     alert('無法連接到後端，請檢查伺服器是否運行');
   });
   
@@ -103,7 +97,6 @@ function startTracking() {
         currentPoints = newPoints;
       }
     }
-    console.log("收到位置：", pos.coords.latitude, pos.coords.longitude, "目前距離：", currentDistance.toFixed(3), "公里");
   }, err => {
     alert("無法取得位置資訊: " + err.message);
   }, { enableHighAccuracy: true });
@@ -128,7 +121,6 @@ function stopTracking() {
       record_time: new Date().toISOString()
     };
     history.unshift(record);
-    console.log("發送資料：", record);
     fetch('/api/backend', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -141,22 +133,17 @@ function stopTracking() {
       })
     })
     .then(response => {
-      console.log("儲存紀錄 - HTTP 狀態碼：", response.status);
       return response.json();
     })
     .then(data => {
-      console.log('儲存紀錄 - 後端回應：', data);
       if (data.status === 'success') {
-        console.log('資料儲存成功');
         alert(`這次${selectedTransport}移動獲得 ${pointsEarned} 點！`);
         suggestEcoPath(selectedTransport);
       } else {
-        console.error('儲存資料失敗:', data.message);
         alert('儲存資料失敗：' + data.message);
       }
     })
     .catch(error => {
-      console.error('傳送錯誤:', error);
       alert('無法連接到後端，請檢查伺服器是否運行');
     });
     
@@ -292,7 +279,6 @@ function calculateRoute() {
 
         // 將記錄添加到歷史記錄陣列的開頭
         history.unshift(record);
-        console.log("發送資料：", record);
 
         // 發送記錄到後端 API
         fetch('/api/backend', {
@@ -308,24 +294,19 @@ function calculateRoute() {
         })
           .then(response => {
             // 記錄 HTTP 狀態碼
-            console.log("儲存紀錄 - HTTP 狀態碼：", response.status);
             return response.json();
           })
           .then(data => {
             // 處理後端回應
-            console.log('儲存紀錄 - 後端回應：', data);
             if (data.status === 'success') {
-              console.log('資料儲存成功');
               // 提示使用者獲得的積分
               alert(`這次${selectedTransport}移動獲得 ${pointsEarned} 點！`);
             } else {
-              console.error('儲存資料失敗:', data.message);
               alert('儲存資料失敗：' + data.message);
             }
           })
           .catch(error => {
             // 處理傳送錯誤
-            console.error('傳送錯誤:', error);
             alert('無法連接到後端，請檢查伺服器是否運行');
           });
 

@@ -45,7 +45,10 @@
     <div class="container py-5 fade-in">
         <div id="rewards-section" class="card mb-4" style="border-radius: 15px;">
             <div class="card-body" style="border-radius: 15px;">
-                <h5 class="card-title">兌換獎勵</h5>
+                <h5 class="card-title">獎勵列表</h5>
+                <h6 class="card-subtitle mb-2 card-title">剩餘點數：<span id="points"><?php echo safe_output($points); ?></span> 點</h6>
+                
+
                 <?php if ($error): ?>
                     <div class="alert alert-danger"><?php echo safe_output($error); ?></div>
                 <?php endif; ?>

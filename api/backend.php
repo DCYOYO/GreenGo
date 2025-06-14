@@ -38,7 +38,7 @@ switch ($action) {
         }
 
         $user = executeQuery(
-            'SELECT id, username, password FROM users WHERE username = ?',
+            'SELECT user_id, username, password FROM users WHERE username = ?',
             [$username],
             'one'
         );
@@ -55,7 +55,7 @@ switch ($action) {
             setcookie('auth_token', '', time() - 3600, '/', '', false, true);
         }
 
-        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['username'] = $user['username'];
         unset($_SESSION['_authnum']);
 
@@ -83,19 +83,18 @@ switch ($action) {
                 'secure' => false,
                 'samesite' => 'Strict'
             ]);
-            
         } else {
             echo json_encode(['status' => 'success', 'message' => '登入成功', 'redirect' => '/tracking']);
             if (executeQuery(
                 'SELECT token FROM auth_tokens WHERE id = ? AND remember_me = 0',
-                [$user['id']],
+                [$user['user_id']],
                 'one'
             )) {
                 executeNonQuery('UPDATE auth_tokens SET token = ?, expires_at = ?, remember_me = ? WHERE id = ? AND remember_me = 0', [$token, $expires_at, 0, $user['id']]);
             } else {
                 executeNonQuery(
                     'INSERT INTO auth_tokens (id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
-                    [$user['id'], $token, $expires_at, 0]
+                    [$user['user_id'], $token, $expires_at, 0]
                 );
             }
             setcookie('auth_token', $token, [
@@ -106,7 +105,6 @@ switch ($action) {
                 'samesite' => 'Strict'
             ]);
             $_SESSION['first_login'] = true;
-            
         }
         exit;
 
@@ -146,7 +144,7 @@ switch ($action) {
         }
 
         $existing_user = executeQuery(
-            'SELECT id FROM users WHERE username = ?',
+            'SELECT user_id FROM users WHERE username = ?',
             [$username],
             'one'
         );
@@ -207,18 +205,11 @@ switch ($action) {
             $points = floor($distance / 5);
         }
 
-        $pdo = getPDO();
-        $pdo->beginTransaction();
         try {
             executeNonQuery(
                 'INSERT INTO travel_records (user_id, transport, distance, footprint, points) VALUES (?, ?, ?, ?, ?)',
                 [$_SESSION['user_id'], $transport, $distance, $footprint, $points]
             );
-            executeNonQuery(
-                'UPDATE users SET total_points = total_points + ?, total_footprint = total_footprint + ? WHERE id = ?',
-                [$points, $footprint, $_SESSION['user_id']]
-            );
-            $pdo->commit();
             echo json_encode([
                 'status' => 'success',
                 'message' => '紀錄成功',
@@ -226,7 +217,6 @@ switch ($action) {
                 'footprint' => $footprint
             ]);
         } catch (PDOException $e) {
-            $pdo->rollback();
             echo json_encode(['status' => 'error', 'message' => '儲存記錄失敗: ' . $e->getMessage()]);
         }
         exit;
@@ -250,13 +240,26 @@ switch ($action) {
             exit;
         }
 
-        $user = executeQuery(
-            'SELECT total_points FROM users WHERE id = ?',
+        $user_points = executeQuery(
+            'SELECT COALESCE(SUM(points), 0) AS total_points FROM travel_records WHERE user_id = ?',
             [$_SESSION['user_id']],
             'one'
         );
 
-        if ($user['total_points'] < $reward['points_required']) {
+        $used_points = executeQuery(
+            'SELECT COALESCE(SUM(points_used), 0) AS total_used_points FROM redeem_history WHERE user_id = ?',
+            [$_SESSION['user_id']],
+            'one'
+        );
+
+        if (!$user_points || !$used_points) {
+            echo json_encode(['status' => 'error', 'message' => '無法獲取用戶積分數據']);
+            exit;
+        }
+
+        $available_points = $user_points['total_points'] - $used_points['total_used_points'];
+
+        if ($available_points < $reward['points_required']) {
             echo json_encode(['status' => 'error', 'message' => '點數不足']);
             exit;
         }
@@ -264,10 +267,6 @@ switch ($action) {
         $pdo = getPDO();
         $pdo->beginTransaction();
         try {
-            executeNonQuery(
-                'UPDATE users SET total_points = total_points - ? WHERE id = ?',
-                [$reward['points_required'], $_SESSION['user_id']]
-            );
             executeNonQuery(
                 'INSERT INTO redeem_history (user_id, reward_id, reward_name, points_used, redeem_time) VALUES (?, ?, ?, ?, NOW())',
                 [$_SESSION['user_id'], $reward_id, $reward['name'], $reward['points_required']]
@@ -376,7 +375,7 @@ switch ($action) {
             if (executeQuery('SELECT id FROM personal_page WHERE id = ?', [$_SESSION['user_id']], 'one')) {
                 executeNonQuery(
                     'INSERT INTO personal_page (id, username, bio, country_code, city, gender, birthdate, activity_level, last_update)
-                     VALUES (?, (SELECT username FROM users WHERE id = ?), ?, ?, ?, ?, ?, ?, NOW())
+                     VALUES (?, (SELECT username FROM users WHERE user_id = ?), ?, ?, ?, ?, ?, ?, NOW())
                      ON DUPLICATE KEY UPDATE 
                      bio = VALUES(bio), country_code = VALUES(country_code), city = VALUES(city), 
                      gender = VALUES(gender), birthdate = VALUES(birthdate), activity_level = VALUES(activity_level), 

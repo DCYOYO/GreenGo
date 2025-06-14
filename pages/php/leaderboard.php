@@ -6,18 +6,16 @@ if (!isset($_SESSION['user_id']) && !isset($_COOKIE['auth_token'])) {
     exit;
 }
 
-
-
 $count = 1;
 $out = '';
 $records = executeQuery(
     'SELECT 
-    u.username,
-    COALESCE(SUM(tr.points), 0) AS total_points,
-    COALESCE(SUM(tr.footprint), 0) AS total_footprint
+        u.username,
+        COALESCE(SUM(tr.points), 0) AS total_points,
+        COALESCE(SUM(tr.footprint), 0) AS total_footprint
     FROM users u
-    LEFT JOIN travel_records tr ON tr.user_id = u.id
-    GROUP BY u.id, u.username
+    LEFT JOIN travel_records tr ON tr.user_id = u.user_id
+    GROUP BY u.user_id, u.username
     ORDER BY total_points DESC, total_footprint ASC
     LIMIT 10',
     [],
@@ -39,3 +37,4 @@ return [
     'username' => $_SESSION['username'],
     'error' => null
 ];
+?>

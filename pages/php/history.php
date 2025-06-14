@@ -6,8 +6,6 @@ if (!isset($_SESSION['user_id']) && !isset($_COOKIE['auth_token'])) {
     exit;
 }
 
-
-
 $records = executeQuery(
     'SELECT record_time, transport, distance, footprint, points 
      FROM travel_records 
@@ -18,48 +16,41 @@ $records = executeQuery(
     'all'
 );
 
-$user = executeQuery(
-    'SELECT total_points FROM users WHERE id = ?',
+$user_points = executeQuery(
+    'SELECT COALESCE(SUM(points), 0) AS total_points FROM travel_records WHERE user_id = ?',
     [$_SESSION['user_id']],
     'one'
 );
 
-if (!$user) {
-    return [
-        'error' => '無法獲取用戶數據',
-        'points' => 0,
-        'username' => $_SESSION['username'],
-        'records_html' => ''
-    ];
-}
+$used_points = executeQuery(
+    'SELECT COALESCE(SUM(points_used), 0) AS total_used_points FROM redeem_history WHERE user_id = ?',
+    [$_SESSION['user_id']],
+    'one'
+);
 
+$available_points = $user_points['total_points'] - ($used_points['total_used_points'] ?? 0);
 
 // 處理排序參數
-$sort_field = $_GET['sort'] ?? 'record_time'; // 預設按時間排序
-$sort_order = $_GET['order'] ?? 'desc'; // 預設降序
-$valid_fields = ['record_time', 'distance', 'footprint', 'points']; // 允許的排序欄位
+$sort_field = $_GET['sort'] ?? 'record_time';
+$sort_order = $_GET['order'] ?? 'desc';
+$valid_fields = ['record_time', 'distance', 'footprint', 'points'];
 
-// 驗證排序欄位
 if (!in_array($sort_field, $valid_fields)) {
     $sort_field = 'record_time';
 }
-// 驗證排序方向
 if (!in_array($sort_order, ['asc', 'desc'])) {
     $sort_order = 'desc';
 }
 
-// 對記錄進行排序
 usort($records, function ($a, $b) use ($sort_field, $sort_order) {
     $val_a = $a[$sort_field];
     $val_b = $b[$sort_field];
     
-    // 處理時間欄位的比較
     if ($sort_field === 'record_time') {
         $val_a = strtotime($val_a);
         $val_b = strtotime($val_b);
     }
     
-    // 數值比較
     if ($val_a == $val_b) {
         return 0;
     }
@@ -68,7 +59,6 @@ usort($records, function ($a, $b) use ($sort_field, $sort_order) {
     return ($sort_order === 'asc') ? $result : -$result;
 });
 
-// 生成記錄的 HTML
 $count = 1;
 $out = '';
 foreach ($records as &$record) {
@@ -87,7 +77,6 @@ foreach ($records as &$record) {
     $count++;
 }
 
-// 排序選單選項
 $sort_options = [
     'record_time' => '時間',
     'distance' => '距離',
@@ -95,10 +84,9 @@ $sort_options = [
     'points' => '獲得點數'
 ];
 
-// 返回資料給前端
 return [
     'records_html' => $out,
-    'points' => $user['total_points'] ?? 0,
+    'points' => $available_points,
     'username' => $_SESSION['username'],
     'error' => null,
     'sort_field' => $sort_field,
