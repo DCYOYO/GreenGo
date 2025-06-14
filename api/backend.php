@@ -73,7 +73,7 @@ switch ($action) {
         if ($remember_me) {
             echo json_encode(['status' => 'success', 'message' => '登入成功', 'redirect' => '/tracking']);
             executeNonQuery(
-                'INSERT INTO auth_tokens (id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
+                'INSERT INTO auth_tokens (user_id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
                 [$user['id'], $token, $expires_at, 1]
             );
             setcookie('auth_token', $token, [
@@ -86,14 +86,14 @@ switch ($action) {
         } else {
             echo json_encode(['status' => 'success', 'message' => '登入成功', 'redirect' => '/tracking']);
             if (executeQuery(
-                'SELECT token FROM auth_tokens WHERE id = ? AND remember_me = 0',
+                'SELECT token FROM auth_tokens WHERE user_id = ? AND remember_me = 0',
                 [$user['user_id']],
                 'one'
             )) {
-                executeNonQuery('UPDATE auth_tokens SET token = ?, expires_at = ?, remember_me = ? WHERE id = ? AND remember_me = 0', [$token, $expires_at, 0, $user['id']]);
+                executeNonQuery('UPDATE auth_tokens SET token = ?, expires_at = ?, remember_me = ? WHERE user_id = ? AND remember_me = 0', [$token, $expires_at, 0, $user['id']]);
             } else {
                 executeNonQuery(
-                    'INSERT INTO auth_tokens (id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
+                    'INSERT INTO auth_tokens (user_id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
                     [$user['user_id'], $token, $expires_at, 0]
                 );
             }
@@ -158,7 +158,7 @@ switch ($action) {
         $pdo->beginTransaction();
         try {
             executeNonQuery(
-                'INSERT INTO users (username, password, total_points, total_footprint) VALUES (?, ?, 0, 0)',
+                'INSERT INTO users (username, password) VALUES (?, ?)',
                 [$username, $hashed_password]
             );
             executeNonQuery(
@@ -372,9 +372,9 @@ switch ($action) {
         $pdo = getPDO();
         try {
             $pdo->beginTransaction();
-            if (executeQuery('SELECT id FROM personal_page WHERE id = ?', [$_SESSION['user_id']], 'one')) {
+            if (executeQuery('SELECT user_id FROM personal_page WHERE user_id = ?', [$_SESSION['user_id']], 'one')) {
                 executeNonQuery(
-                    'INSERT INTO personal_page (id, username, bio, country_code, city, gender, birthdate, activity_level, last_update)
+                    'INSERT INTO personal_page (user_id, username, bio, country_code, city, gender, birthdate, activity_level, last_update)
                      VALUES (?, (SELECT username FROM users WHERE user_id = ?), ?, ?, ?, ?, ?, ?, NOW())
                      ON DUPLICATE KEY UPDATE 
                      bio = VALUES(bio), country_code = VALUES(country_code), city = VALUES(city), 
@@ -393,7 +393,7 @@ switch ($action) {
                 );
             } else {
                 executeNonQuery(
-                    'INSERT INTO personal_page (id, username, bio, country_code, city, gender, birthdate, activity_level, last_update)
+                    'INSERT INTO personal_page (user_id, username, bio, country_code, city, gender, birthdate, activity_level, last_update)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
                     [
                         $_SESSION['user_id'],

@@ -31,7 +31,7 @@ USE `carbon_tracker`;
 
 DROP TABLE IF EXISTS `auth_tokens`;
 CREATE TABLE `auth_tokens` (
-  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `token` varchar(255) NOT NULL,
   `expires_at` datetime NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -46,7 +46,7 @@ CREATE TABLE `auth_tokens` (
 
 DROP TABLE IF EXISTS `personal_page`;
 CREATE TABLE `personal_page` (
-  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL COMMENT '關聯的使用者名稱',
   `bio` text DEFAULT NULL COMMENT '個人簡介',
   `country_code` nvarchar(10) DEFAULT NULL COMMENT '國家名稱',
@@ -62,7 +62,7 @@ CREATE TABLE `personal_page` (
 -- 傾印資料表的資料 `personal_page`
 --
 
-INSERT INTO `personal_page` (`id`, `username`, `bio`, `country_code`, `city`, `gender`, `birthdate`, `activity_level`, `created_at`, `last_update`) VALUES
+INSERT INTO `personal_page` (`user_id`, `username`, `bio`, `country_code`, `city`, `gender`, `birthdate`, `activity_level`, `created_at`, `last_update`) VALUES
 (1, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:02', NULL),
 (2, 'bbb', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:03', NULL),
 (3, 'ccc', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:04', NULL),
@@ -189,14 +189,14 @@ INSERT INTO `users` (`user_id`, `username`, `password`) VALUES
 -- 資料表索引 `auth_tokens`
 --
 ALTER TABLE `auth_tokens`
-  ADD PRIMARY KEY (`id`),
+  ADD PRIMARY KEY (`user_id`),
   ADD UNIQUE KEY `token` (`token`);
 
 --
 -- 資料表索引 `personal_page`
 --
 ALTER TABLE `personal_page`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`user_id`);
 
 --
 -- 資料表索引 `users`
@@ -225,13 +225,13 @@ ALTER TABLE `rewards`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `personal_page`
 --
 ALTER TABLE `personal_page`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- 已傾印資料表的限制式
