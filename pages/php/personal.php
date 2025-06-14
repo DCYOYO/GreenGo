@@ -50,7 +50,7 @@ $user_data = executeQuery(
         p.activity_level,
         p.last_update
      FROM users u
-     LEFT JOIN personal_page p ON u.username = p.username
+     LEFT JOIN personal_page p ON u.user_id = p.user_id
      LEFT JOIN travel_records tr ON tr.user_id = u.user_id
      WHERE u.user_id = ?',
     [$target_user_id],

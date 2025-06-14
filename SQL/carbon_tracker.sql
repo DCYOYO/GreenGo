@@ -1,9 +1,9 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.2
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2025-06-08 19:31:40
+-- 產生時間： 2025-06-14 19:10:08
 -- 伺服器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -49,8 +49,8 @@ CREATE TABLE `personal_page` (
   `user_id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL COMMENT '關聯的使用者名稱',
   `bio` text DEFAULT NULL COMMENT '個人簡介',
-  `country_code` nvarchar(10) DEFAULT NULL COMMENT '國家名稱',
-  `city` nvarchar(10) DEFAULT NULL COMMENT '城市',
+  `country_code` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '國家名稱',
+  `city` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '城市',
   `gender` enum('男','女','其他') DEFAULT NULL COMMENT '性別',
   `birthdate` date DEFAULT NULL COMMENT '生日',
   `activity_level` enum('低','中','高') DEFAULT NULL COMMENT '活躍程度',
@@ -72,7 +72,8 @@ INSERT INTO `personal_page` (`user_id`, `username`, `bio`, `country_code`, `city
 (7, 'ggg', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:08', NULL),
 (8, 'hhh', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:09', NULL),
 (9, 'iii', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:10', NULL),
-(10,'jjj', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:11', NULL);
+(10, 'jjj', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-09 01:31:11', NULL),
+(11, '123', NULL, NULL, NULL, NULL, NULL, NULL, '2025-06-15 00:49:11', NULL);
 
 -- --------------------------------------------------------
 
@@ -179,7 +180,8 @@ INSERT INTO `users` (`user_id`, `username`, `password`) VALUES
 (7, 'ggg', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
 (8, 'hhh', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
 (9, 'iii', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
-(10, 'jjj', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i');
+(10, 'jjj', '$2y$10$Ri0qfQjiidUYdLiOFzfV9.aYtuz4Zj.uzTKjsl/U7Resj0rltUu5i'),
+(11, '123', '$2y$10$Z5mh3wcm0SrIFKx4r3z9KeMfA1peZdXKboKR6nuIxiP1s6GnVo2Ly');
 
 --
 -- 已傾印資料表的索引
@@ -199,6 +201,27 @@ ALTER TABLE `personal_page`
   ADD PRIMARY KEY (`user_id`);
 
 --
+-- 資料表索引 `redeem_history`
+--
+ALTER TABLE `redeem_history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `reward_id` (`reward_id`);
+
+--
+-- 資料表索引 `rewards`
+--
+ALTER TABLE `rewards`
+  ADD PRIMARY KEY (`reward_id`);
+
+--
+-- 資料表索引 `travel_records`
+--
+ALTER TABLE `travel_records`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- 資料表索引 `users`
 --
 ALTER TABLE `users`
@@ -208,42 +231,31 @@ ALTER TABLE `users`
 --
 -- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
 --
-ALTER TABLE `travel_records`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
 
-ALTER TABLE `redeem_history`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `reward_id` (`reward_id`);
---
--- 使用資料表自動遞增(AUTO_INCREMENT) `auth_tokens`
---
-ALTER TABLE `rewards`
-  ADD PRIMARY KEY (`reward_id`);
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `personal_page`
 --
 ALTER TABLE `personal_page`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `redeem_history`
+--
+ALTER TABLE `redeem_history`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `travel_records`
+--
+ALTER TABLE `travel_records`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- 已傾印資料表的限制式
---
-ALTER TABLE `travel_records`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
---
--- 資料表的限制式 `auth_tokens`
---
-ALTER TABLE `redeem_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
---
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
