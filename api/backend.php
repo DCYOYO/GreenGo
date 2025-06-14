@@ -74,7 +74,7 @@ switch ($action) {
             echo json_encode(['status' => 'success', 'message' => '登入成功', 'redirect' => '/tracking']);
             executeNonQuery(
                 'INSERT INTO auth_tokens (user_id, token, expires_at, remember_me) VALUES (?, ?, ?, ?)',
-                [$user['id'], $token, $expires_at, 1]
+                [$user['user_id'], $token, $expires_at, 1]
             );
             setcookie('auth_token', $token, [
                 'expires' => time() + (30 * 24 * 3600),
