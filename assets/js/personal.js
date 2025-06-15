@@ -182,7 +182,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.status === 'success') {
                     showSuccess(data.message);
                     loadPendingRequests();
+<<<<<<< HEAD
                     loadFriends();
+=======
+>>>>>>> fb3238f27f65559a7372e2f239ab3ad2839963ba
                 } else {
                     showError(profileError, data.message);
                 }
