@@ -10,9 +10,11 @@ $search_username = trim($_POST['username'] ?? '');
 $target_user_id = null;
 $data = [
     'error' => null,
-    'username' =>$_SESSION['username'],
+    'username' => $_SESSION['username'],
+    'search_username' => $_SESSION['username'],
     'is_owner' => true,
     'user' => [],
+    'user_id' => null,
     'csrf_token' => generate_csrf_token()
 ];
 
@@ -32,14 +34,16 @@ if (!empty($search_username)) {
 
     $target_user_id = $target_user['user_id'];
     $data['is_owner'] = $target_user_id === $user_id;
-    $data['username']=$search_username;
+    $data['search_username'] = $search_username;
 } else {
     $target_user_id = $user_id;
 }
 
 $user_data = executeQuery(
     'SELECT 
+        u.user_id,
         u.username,
+        u.username AS search_username,
         COALESCE(SUM(tr.points), 0) AS total_points,
         COALESCE(SUM(tr.footprint), 0) AS total_footprint,
         p.bio,
@@ -59,7 +63,8 @@ $user_data = executeQuery(
 
 if ($user_data) {
     $data['user'] = [
-        'username' => htmlspecialchars($user_data['username']),
+        'user_id' => $user_data['user_id'],
+        'search_username' => htmlspecialchars($user_data['search_username']),
         'total_points' => $user_data['total_points'] ?? 0,
         'total_footprint' => number_format($user_data['total_footprint'] ?? 0, 2),
         'bio' => htmlspecialchars($user_data['bio'] ?? ''),
@@ -71,9 +76,11 @@ if ($user_data) {
         'last_update' => htmlspecialchars($user_data['last_update'] ?? ''),
         'avatar' => file_exists(__DIR__ . "/../../avatars/$target_user_id.jpg") ? "/avatars/$target_user_id.jpg" : null
     ];
+    $data['user_id'] = $user_data['user_id'];
 } else {
     $data['error'] = '無法獲取用戶數據';
 }
 
 return $data;
 ?>
+```

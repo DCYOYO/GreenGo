@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2025-06-14 19:10:08
+-- 產生時間： 2025-06-15 09:09:57
 -- 伺服器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -37,6 +37,22 @@ CREATE TABLE `auth_tokens` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `remember_me` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `friends`
+--
+
+DROP TABLE IF EXISTS `friends`;
+CREATE TABLE `friends` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `friend_id` int(11) NOT NULL,
+  `status` enum('pending','accepted','rejected') DEFAULT 'pending' COMMENT '好友狀態：待接受、已接受、已拒絕',
+  `created_at` datetime NOT NULL DEFAULT current_timestamp() COMMENT '建立時間',
+  `initiator_id` int(11) NOT NULL COMMENT '發起請求的用戶 ID'
+) ;
 
 -- --------------------------------------------------------
 
@@ -195,6 +211,15 @@ ALTER TABLE `auth_tokens`
   ADD UNIQUE KEY `token` (`token`);
 
 --
+-- 資料表索引 `friends`
+--
+ALTER TABLE `friends`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_friendship` (`user_id`,`friend_id`),
+  ADD KEY `friend_id` (`friend_id`),
+  ADD KEY `initiator_id` (`initiator_id`);
+
+--
 -- 資料表索引 `personal_page`
 --
 ALTER TABLE `personal_page`
@@ -233,6 +258,12 @@ ALTER TABLE `users`
 --
 
 --
+-- 使用資料表自動遞增(AUTO_INCREMENT) `friends`
+--
+ALTER TABLE `friends`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- 使用資料表自動遞增(AUTO_INCREMENT) `personal_page`
 --
 ALTER TABLE `personal_page`
@@ -255,6 +286,18 @@ ALTER TABLE `travel_records`
 --
 ALTER TABLE `users`
   MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- 已傾印資料表的限制式
+--
+
+--
+-- 資料表的限制式 `friends`
+--
+ALTER TABLE `friends`
+  ADD CONSTRAINT `friends_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `friends_ibfk_2` FOREIGN KEY (`friend_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `friends_ibfk_3` FOREIGN KEY (`initiator_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

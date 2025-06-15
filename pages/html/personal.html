@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,21 +9,61 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
     <style>
-        .error-message { display: none; color: red; margin-top: 10px; }
-        .avatar-img { max-width: 150px; border-radius: 50%; }
-        .form-section { margin-bottom: 20px; }
+        .error-message {
+            display: none;
+            color: red;
+            margin-top: 10px;
+        }
+
+        .avatar-img {
+            max-width: 150px;
+            border-radius: 50%;
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+        }
+
+        #friends-list .list-group-item .friend-link {
+            cursor: pointer !important;
+            /* 確保手型指標 */
+            color: #ffffff !important;
+            /* 預設白色 */
+            transition: color 0.2s !important;
+            /* 平滑過渡 */
+            text-decoration: none !important;
+            /* 移除底線 */
+        }
+
+        #friends-list .list-group-item .friend-link:hover {
+            color: #28a745 !important;
+            /* 懸停綠色 */
+            text-decoration: none !important;
+            /* 確保無底線 */
+        }
+
+        /* 確保列表項背景與文字對比 */
+        #friends-list .list-group-item {
+            background-color: #212529 !important;
+            /* 暗灰色背景 */
+            color: #ffffff !important;
+            /* 預設文字白色 */
+        }
     </style>
 </head>
+
 <body class="bg-dark text-light mb-5">
     <nav class="navbar navbar-expand-lg navbar-dark ">
         <div class="container mt-3">
             <button onclick="location.href='/tracking'" class="btn btn-link text-decoration-none">
                 <h1 class="mb-4 text-success-emphasis fw-bold">
                     <i class="bi bi-leaf" style="color: #a7d49b;text-shadow: 0.1em 0.1em 0.05em #1e211f">Greengo </i>
-                    <i class="bi bi-leaf" style="color:rgb(200, 255, 200);font-size:19px;text-shadow: 0.2em 0.2em 0.2em #131514">讓環保充斥在你我生活之間</i>
+                    <i class="bi bi-leaf"
+                        style="color:rgb(200, 255, 200);font-size:19px;text-shadow: 0.2em 0.2em 0.2em #131514">讓環保充斥在你我生活之間</i>
                 </h1>
             </button>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -33,18 +74,23 @@
                     <li class="nav-item"><a class="nav-link" href="/rewards">獎勵</a></li>
                 </ul>
             </div>
-                <form action="/api/backend.php" method="POST" class="fixed-logout d-flex align-items-center shadow-sm rounded-pill px-3 py-1">
-                    <div class="user-avatar rounded-circle me-2 d-flex align-items-center justify-content-center">
-                        <span class="text-white fw-bold"><?php echo safe_output($username[0]); ?></span>
-                    </div>
-                    <span class="me-3 fw-bold">
-                        <ul class="navbar-nav ms-auto mr-4">
-                            <li class="nav-item"><a class="nav-link active" href="/personal"><?php echo safe_output($username); ?></a></li>
-                        </ul>
+            <form action="/api/backend.php" method="POST"
+                class="fixed-logout d-flex align-items-center shadow-sm rounded-pill px-3 py-1">
+                <div class="user-avatar rounded-circle me-2 d-flex align-items-center justify-content-center">
+                    <span class="text-white fw-bold">
+                        <?php echo safe_output($username[0]); ?>
                     </span>
-                    <input type="hidden" name="action" value="logout">
-                    <button type="submit" class="btn btn-outline-danger btn-sm">登出</button>
-                </form>
+                </div>
+                <span class="me-3 fw-bold">
+                    <ul class="navbar-nav ms-auto mr-4">
+                        <li class="nav-item"><a class="nav-link active" href="/personal">
+                                <?php echo safe_output($username); ?>
+                            </a></li>
+                    </ul>
+                </span>
+                <input type="hidden" name="action" value="logout">
+                <button type="submit" class="btn btn-outline-danger btn-sm">登出</button>
+            </form>
         </div>
     </nav>
     <div class="container mt-5">
@@ -53,127 +99,190 @@
         <!-- Search Form -->
         <form class="form-section" action="/personal" method="POST">
             <div class="input-group mb-3">
-                <input type="text" name="username" class="form-control" placeholder="輸入用戶名查詢" value="<?php echo htmlspecialchars($data['username'] ?? ''); ?>">
-                <button type="submit" class="btn" style="background-color: rgb(79, 110, 209);color: aliceblue;">查詢</button>
+                <input type="text" name="username" class="form-control" placeholder="輸入用戶名查詢"
+                    value="<?php echo safe_output($data['search_username'] ?? ''); ?>">
+                <button type="submit" class="btn"
+                    style="background-color: rgb(79, 110, 209);color: aliceblue;">查詢</button>
             </div>
         </form>
 
         <!-- Error Message -->
         <?php if (isset($data['error'])): ?>
-            <div class="alert alert-danger">
-                找不到用戶：<?php echo htmlspecialchars($data['error']); ?>
-            </div>
+        <div class="alert alert-danger">
+            找不到用戶：
+            <?php echo safe_output($data['error']); ?>
+        </div>
         <?php endif; ?>
 
         <!-- User Profile -->
         <?php if (!empty($data['user'])): ?>
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 text-center">
-                            <?php if ($data['user']['avatar']): ?>
-                                <img id="avatar-img" src="<?php echo htmlspecialchars($data['user']['avatar']); ?>" alt="頭像" class="avatar-img mb-3">
-                            <?php else: ?>
-                                <div class="avatar-img mb-3 bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 150px;">無頭像</div>
-                            <?php endif; ?>
-                            <h5><?php echo htmlspecialchars($data['user']['username']); ?></h5>
-                            <p>總積分：<?php echo $data['user']['total_points']; ?></p>
-                            <p>總碳足跡：<?php echo $data['user']['total_footprint']; ?> kg</p>
-                        </div>
-                        <div class="col-md-9">
-                            <h6>個人資料</h6>
-                            <p><strong>簡介：</strong> <?php echo htmlspecialchars($data['user']['bio'] ?: '無'); ?></p>
-                            <p><strong>國家代碼：</strong> <?php echo htmlspecialchars($data['user']['country_code'] ?: '無'); ?></p>
-                            <p><strong>城市：</strong> <?php echo htmlspecialchars($data['user']['city'] ?: '無'); ?></p>
-                            <p><strong>性別：</strong> <?php echo htmlspecialchars($data['user']['gender']); ?></p>
-                            <p><strong>生日：</strong> <?php echo htmlspecialchars($data['user']['birthdate'] ?: '無'); ?></p>
-                            <p><strong>活躍程度：</strong> <?php echo htmlspecialchars($data['user']['activity_level']); ?></p>
-                            <p><strong>上次更新：</strong> <?php echo htmlspecialchars($data['user']['last_update'] ?: '無'); ?></p>
-                        </div>
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <?php echo $user['search_username']; ?> 的個人主頁
+                </span>
+                <?php if (!$is_owner): ?>
+                <button id="friend-action-btn" class="btn btn-primary btn-sm"
+                    data-friend-id="<?php echo safe_output($data['user']['user_id']); ?>">添加好友</button>
+                <?php endif; ?>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <?php if ($data['user']['avatar']): ?>
+                        <img id="avatar-img" src="<?php echo safe_output($data['user']['avatar']); ?>" alt="頭像"
+                            class="avatar-img mb-3">
+                        <?php else: ?>
+                        <div class="avatar-img mb-3 bg-secondary text-white d-flex align-items-center justify-content-center"
+                            style="height: 150px;">無頭像</div>
+                        <?php endif; ?>
+                        <h5>
+                            <?php echo safe_output($data['user']['search_username']); ?>
+                        </h5>
+                        <p>總積分：
+                            <?php echo $data['user']['total_points']; ?>
+                        </p>
+                        <p>總碳足跡：
+                            <?php echo $data['user']['total_footprint']; ?> kg
+                        </p>
+                    </div>
+                    <div class="col-md-9">
+                        <h6>個人資料</h6>
+                        <p><strong>簡介：</strong>
+                            <?php echo safe_output($data['user']['bio'] ?: '無'); ?>
+                        </p>
+                        <p><strong>國家代碼：</strong>
+                            <?php echo safe_output($data['user']['country_code'] ?: '無'); ?>
+                        </p>
+                        <p><strong>城市：</strong>
+                            <?php echo safe_output($data['user']['city'] ?: '無'); ?>
+                        </p>
+                        <p><strong>性別：</strong>
+                            <?php echo safe_output($data['user']['gender']); ?>
+                        </p>
+                        <p><strong>生日：</strong>
+                            <?php echo safe_output($data['user']['birthdate'] ?: '無'); ?>
+                        </p>
+                        <p><strong>活躍程度：</strong>
+                            <?php echo safe_output($data['user']['activity_level']); ?>
+                        </p>
+                        <p><strong>上次更新：</strong>
+                            <?php echo safe_output($data['user']['last_update'] ?: '無'); ?>
+                        </p>
                     </div>
                 </div>
             </div>
+        </div>
         <?php endif; ?>
 
         <!-- Avatar Upload (only for profile owner) -->
         <?php if ($data['is_owner'] && !empty($data['user'])): ?>
-            <div class="card mb-4" >
-                <div class="card-body">
-                    <h5>上傳頭像</h5>
-                    <form id="avatar-form" enctype="multipart/form-data"  >
-                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($data['csrf_token']); ?>">
-                        <input type="hidden" name="action" value="upload_avatar">
-                        <div class="mb-3">
-                            <label for="avatar-input" class="form-label">選擇圖像（JPG, PNG, GIF，最大 5MB）</label>
-                            <input type="file" id="avatar-input" name="avatar" class="form-control" accept="image/jpeg,image/png,image/gif" >
-                        </div>
-                        <button type="submit" class="btn " style="background-color: rgb(79, 110, 209);color: aliceblue;">上傳</button>
-                    </form>
-                    <div id="avatar-error" class="error-message"></div>
-                </div>
+        <div class="card mb-4">
+            <div class="card-header">好友列表</div>
+            <div class="card-body">
+                <div id="friends-list"></div>
             </div>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header">待處理的好友請求</div>
+            <div class="card-body">
+                <div id="pending-requests"></div>
+            </div>
+        </div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>上傳頭像</h5>
+                <form id="avatar-form" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="<?php echo safe_output($data['csrf_token']); ?>">
+                    <input type="hidden" name="action" value="upload_avatar">
+                    <div class="mb-3">
+                        <label for="avatar-input" class="form-label">選擇圖像（JPG, PNG, GIF，最大 5MB）</label>
+                        <input type="file" id="avatar-input" name="avatar" class="form-control"
+                            accept="image/jpeg,image/png,image/gif">
+                    </div>
+                    <button type="submit" class="btn "
+                        style="background-color: rgb(79, 110, 209);color: aliceblue;">上傳</button>
+                </form>
+                <div id="avatar-error" class="error-message"></div>
+            </div>
+        </div>
 
-            
-            <!-- Profile Edit -->
-            <div class="card"  >
-                <div class="card-body">
-                    <h5>編輯個人資料</h5>
-                    <form id="profile-form"  >
-                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($data['csrf_token']); ?>">
-                        <input type="hidden" name="action" value="update_profile">
-                        <div class="mb-3">
-                            <label for="bio" class="form-label">自我介紹</label>
-                            <textarea id="bio" name="bio" class="form-control" rows="4"><?php echo htmlspecialchars($data['user']['bio'] ?? ''); ?></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="country-code" class="form-label">國家代碼</label>
-                            <select id="country-code" name="country_code" class="form-select">
-                                <option value="">請選擇國家</option>
-                                <option value="台灣" <?php if ($data['user']['country_code'] === '台灣') echo 'selected'; ?>>台灣</option>
-                                <option value="美國" <?php if ($data['user']['country_code'] === '美國') echo 'selected'; ?>>美國</option>
-                                <option value="日本" <?php if ($data['user']['country_code'] === '日本') echo 'selected'; ?>>日本</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="city" class="form-label">城市</label>
-                            <select id="city" name="city" class="form-select">
-                                <option value="">請先選擇國家</option>
-                                <?php if (!empty($data['user']['city'])): ?>
-                                    <option value="<?php echo htmlspecialchars($data['user']['city']); ?>" selected><?php echo htmlspecialchars($data['user']['city']); ?></option>
-                                <?php endif; ?>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="gender" class="form-label">性別</label>
-                            <select id="gender" name="gender" class="form-select">
-                                <option value="不公開" <?php if ($data['user']['gender'] === '不公開') echo 'selected'; ?>>不公開</option>
-                                <option value="男" <?php if ($data['user']['gender'] === '男') echo 'selected'; ?>>男</option>
-                                <option value="女" <?php if ($data['user']['gender'] === '女') echo 'selected'; ?>>女</option>
-                                <option value="其他" <?php if ($data['user']['gender'] === '其他') echo 'selected'; ?>>其他</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="birthdate" class="form-label">生日</label>
-                            <input type="date" id="birthdate" name="birthdate" class="form-control" value="<?php echo htmlspecialchars($data['user']['birthdate'] ?? ''); ?>">
-                        </div>
-                        <div class="mb-3">
-                            <label for="activity-level" class="form-label">活躍程度</label>
-                            <select id="activity-level" name="activity_level" class="form-select">
-                                <option value="不公開" <?php if ($data['user']['activity_level'] === '不公開') echo 'selected'; ?>>不公開</option>
-                                <option value="低" <?php if ($data['user']['activity_level'] === '低') echo 'selected'; ?>>低</option>
-                                <option value="中" <?php if ($data['user']['activity_level'] === '中') echo 'selected'; ?>>中</option>
-                                <option value="高" <?php if ($data['user']['activity_level'] === '高') echo 'selected'; ?>>高</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn" style="background-color: rgb(79, 110, 209);color: aliceblue;">儲存變更</button>
-                    </form>
-                    <div id="profile-error" class="error-message"></div>
-                </div>
+
+        <!-- Profile Edit -->
+        <div class="card">
+            <div class="card-body">
+                <h5>編輯個人資料</h5>
+                <form id="profile-form">
+                    <input type="hidden" name="csrf_token" value="<?php echo safe_output($data['csrf_token']); ?>">
+                    <input type="hidden" name="action" value="update_profile">
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">自我介紹</label>
+                        <textarea id="bio" name="bio" class="form-control"
+                            rows="4"><?php echo safe_output($data['user']['bio'] ?? ''); ?></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="country-code" class="form-label">國家代碼</label>
+                        <select id="country-code" name="country_code" class="form-select">
+                            <option value="">請選擇國家</option>
+                            <option value="台灣" <?php if ($data['user']['country_code']==='台灣' ) echo 'selected' ; ?>>台灣
+                            </option>
+                            <option value="美國" <?php if ($data['user']['country_code']==='美國' ) echo 'selected' ; ?>>美國
+                            </option>
+                            <option value="日本" <?php if ($data['user']['country_code']==='日本' ) echo 'selected' ; ?>>日本
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="city" class="form-label">城市</label>
+                        <select id="city" name="city" class="form-select">
+                            <option value="">請先選擇國家</option>
+                            <?php if (!empty($data['user']['city'])): ?>
+                            <option value="<?php echo safe_output($data['user']['city']); ?>" selected>
+                                <?php echo safe_output($data['user']['city']); ?>
+                            </option>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="gender" class="form-label">性別</label>
+                        <select id="gender" name="gender" class="form-select">
+                            <option value="不公開" <?php if ($data['user']['gender']==='不公開' ) echo 'selected' ; ?>>不公開
+                            </option>
+                            <option value="男" <?php if ($data['user']['gender']==='男' ) echo 'selected' ; ?>>男</option>
+                            <option value="女" <?php if ($data['user']['gender']==='女' ) echo 'selected' ; ?>>女</option>
+                            <option value="其他" <?php if ($data['user']['gender']==='其他' ) echo 'selected' ; ?>>其他
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="birthdate" class="form-label">生日</label>
+                        <input type="date" id="birthdate" name="birthdate" class="form-control"
+                            value="<?php echo safe_output($data['user']['birthdate'] ?? ''); ?>">
+                    </div>
+                    <div class="mb-3">
+                        <label for="activity-level" class="form-label">活躍程度</label>
+                        <select id="activity-level" name="activity_level" class="form-select">
+                            <option value="不公開" <?php if ($data['user']['activity_level']==='不公開' ) echo 'selected' ; ?>
+                                >不公開</option>
+                            <option value="低" <?php if ($data['user']['activity_level']==='低' ) echo 'selected' ; ?>>低
+                            </option>
+                            <option value="中" <?php if ($data['user']['activity_level']==='中' ) echo 'selected' ; ?>>中
+                            </option>
+                            <option value="高" <?php if ($data['user']['activity_level']==='高' ) echo 'selected' ; ?>>高
+                            </option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn"
+                        style="background-color: rgb(79, 110, 209);color: aliceblue;">儲存變更</button>
+                </form>
+                <div id="profile-error" class="error-message"></div>
             </div>
+        </div>
         <?php endif; ?>
     </div>
 
     <script src="/assets/js/personal.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

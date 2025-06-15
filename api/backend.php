@@ -414,7 +414,195 @@ switch ($action) {
             echo json_encode(['status' => 'error', 'message' => '更新失敗: ' . $e->getMessage()]);
         }
         exit;
+    case 'add_friend':
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['status' => 'error', 'message' => '請先登入']);
+            exit;
+        }
 
+        $friend_id = intval($_POST['friend_id'] ?? 0);
+        if ($friend_id <= 0) {
+            echo json_encode(['status' => 'error', 'message' => '無效的好友 ID']);
+            exit;
+        }
+
+        if ($friend_id == $_SESSION['user_id']) {
+            echo json_encode(['status' => 'error', 'message' => '不能添加自己為好友']);
+            exit;
+        }
+
+        // 確保 user_id < friend_id
+        $smaller_id = min($_SESSION['user_id'], $friend_id);
+        $larger_id = max($_SESSION['user_id'], $friend_id);
+        $initiator_id = $_SESSION['user_id'];
+
+        $existing_request = executeQuery(
+            'SELECT status FROM friends WHERE user_id = ? AND friend_id = ?',
+            [$smaller_id, $larger_id],
+            'one'
+        );
+
+        if ($existing_request) {
+            if ($existing_request['status'] === 'accepted') {
+                echo json_encode(['status' => 'error', 'message' => '已是好友']);
+                exit;
+            } else if ($existing_request['status'] === 'pending') {
+                echo json_encode(['status' => 'error', 'message' => '好友請求已存在']);
+                exit;
+            }
+        }
+
+        try {
+            if ($existing_request['status'] == 'rejected') {
+                // 如果已經有 pending 狀態的請求，則更新 initiator_id
+                executeNonQuery(
+                    'UPDATE friends SET initiator_id = ?,status = ? WHERE user_id = ? AND friend_id = ?',
+                    [$initiator_id, 'pending', $smaller_id, $larger_id]
+                );
+            } else {
+                executeNonQuery(
+                    'INSERT INTO friends (user_id, friend_id, status, initiator_id) VALUES (?, ?, ?, ?)',
+                    [$smaller_id, $larger_id, 'pending', $initiator_id]
+                );
+            }
+
+            echo json_encode(['status' => 'success', 'message' => '好友請求已發送']);
+        } catch (PDOException $e) {
+            echo json_encode(['status' => 'error', 'message' => '發送好友請求失敗: ' . $e->getMessage()]);
+        }
+        exit;
+
+    case 'respond_friend_request':
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['status' => 'error', 'message' => '請先登入']);
+            exit;
+        }
+
+        $request_id = intval($_POST['request_id'] ?? 0);
+        $response = $_POST['response'] ?? '';
+
+        if (!in_array($response, ['accept', 'reject'])) {
+            echo json_encode(['status' => 'error', 'message' => '無效的回應']);
+            exit;
+        }
+
+        $request = executeQuery(
+            'SELECT user_id, friend_id, initiator_id FROM friends WHERE id = ? AND status = ?',
+            [$request_id, 'pending'],
+            'one'
+        );
+
+        if (!$request || $request['initiator_id'] == $_SESSION['user_id'] || ($request['friend_id'] != $_SESSION['user_id'] && $request['user_id'] != $_SESSION['user_id'])) {
+            echo json_encode(['status' => 'error', 'message' => '無效的好友請求']);
+            exit;
+        }
+
+        try {
+            $status = $response === 'accept' ? 'accepted' : 'rejected';
+            executeNonQuery(
+                'UPDATE friends SET status = ? WHERE id = ?',
+                [$status, $request_id]
+            );
+            echo json_encode(['status' => 'success', 'message' => $response === 'accept' ? '已接受好友請求' : '已拒絕好友請求']);
+        } catch (PDOException $e) {
+            echo json_encode(['status' => 'error', 'message' => '處理好友請求失敗: ' . $e->getMessage()]);
+        }
+        exit;
+
+    case 'get_friend_status':
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['status' => 'error', 'message' => '請先登入']);
+            exit;
+        }
+
+        $friend_id = intval($_POST['friend_id'] ?? 0);
+        if ($friend_id <= 0) {
+            echo json_encode(['status' => 'error', 'message' => '無效的好友 ID']);
+            exit;
+        }
+
+        $smaller_id = min($_SESSION['user_id'], $friend_id);
+        $larger_id = max($_SESSION['user_id'], $friend_id);
+
+        $status = executeQuery(
+            'SELECT status FROM friends WHERE user_id = ? AND friend_id = ?',
+            [$smaller_id, $larger_id],
+            'one'
+        );
+
+        echo json_encode(['status' => 'success', 'friend_status' => $status ? $status['status'] : 'none']);
+        exit;
+
+    case 'get_pending_requests':
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['status' => 'error', 'message' => '請先登入']);
+            exit;
+        }
+
+        $requests = executeQuery(
+            'SELECT f.id AS request_id, u.username 
+             FROM friends f 
+             JOIN users u ON u.user_id = f.initiator_id 
+             WHERE (f.user_id = ? OR f.friend_id = ?) AND f.status = "pending" AND f.initiator_id != ?',
+            [$_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id']],
+            'all'
+        );
+
+        echo json_encode(['status' => 'success', 'requests' => $requests]);
+        exit;
+    case 'delete_friend':
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['status' => 'error', 'message' => '請先登入']);
+            exit;
+        }
+
+        $friend_id = intval($_POST['friend_id'] ?? 0);
+        if ($friend_id <= 0) {
+            echo json_encode(['status' => 'error', 'message' => '無效的好友 ID']);
+            exit;
+        }
+
+        $smaller_id = min($_SESSION['user_id'], $friend_id);
+        $larger_id = max($_SESSION['user_id'], $friend_id);
+
+        $friendship = executeQuery(
+            'SELECT id FROM friends WHERE user_id = ? AND friend_id = ? AND status = ?',
+            [$smaller_id, $larger_id, 'accepted'],
+            'one'
+        );
+
+        if (!$friendship) {
+            echo json_encode(['status' => 'error', 'message' => '好友關係不存在或尚未建立']);
+            exit;
+        }
+
+        try {
+            executeNonQuery(
+                'DELETE FROM friends WHERE id = ?',
+                [$friendship['id']]
+            );
+            echo json_encode(['status' => 'success', 'message' => '已刪除好友']);
+        } catch (PDOException $e) {
+            echo json_encode(['status' => 'error', 'message' => '刪除好友失敗: ' . $e->getMessage()]);
+        }
+        exit;
+    case 'get_friends':
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['status' => 'error', 'message' => '請先登入']);
+            exit;
+        }
+
+        $friends = executeQuery(
+            'SELECT u.user_id, u.username 
+         FROM friends f 
+         JOIN users u ON (u.user_id = f.friend_id OR u.user_id = f.user_id) 
+         WHERE (f.user_id = ? OR f.friend_id = ?) AND f.status = "accepted" AND u.user_id != ?',
+            [$_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id']],
+            'all'
+        );
+
+        echo json_encode(['status' => 'success', 'friends' => $friends]);
+        exit;
     default:
         echo json_encode(['status' => 'error', 'message' => '無效的操作']);
         exit;
