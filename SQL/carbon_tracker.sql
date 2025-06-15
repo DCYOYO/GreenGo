@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2025-06-15 10:08:39
+-- 產生時間： 2025-06-15 10:21:25
 -- 伺服器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -38,6 +38,13 @@ CREATE TABLE `auth_tokens` (
   `remember_me` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- 傾印資料表的資料 `auth_tokens`
+--
+
+INSERT INTO `auth_tokens` (`user_id`, `token`, `expires_at`, `created_at`, `remember_me`) VALUES
+(9, '76568b37f075ce76253a8310622e111e9d55bce90cb58bd9f1194505990be80a', '2025-07-15 10:20:16', '2025-06-15 08:20:16', 0);
+
 -- --------------------------------------------------------
 
 --
@@ -70,7 +77,8 @@ INSERT INTO `friends` (`id`, `user_id`, `friend_id`, `status`, `created_at`, `in
 (10, 1, 7, 'rejected', '2025-06-15 16:02:05', 1),
 (11, 6, 8, 'accepted', '2025-06-15 16:03:12', 6),
 (12, 7, 10, 'pending', '2025-06-15 16:04:59', 7),
-(13, 1, 8, 'rejected', '2025-06-15 16:07:24', 1);
+(13, 1, 8, 'rejected', '2025-06-15 16:07:24', 1),
+(14, 1, 9, 'accepted', '2025-06-15 16:20:04', 1);
 
 -- --------------------------------------------------------
 
@@ -105,7 +113,7 @@ INSERT INTO `personal_page` (`user_id`, `username`, `bio`, `country_code`, `city
 (6, 'fff', '人家剛滿18歲', '日本', '東京', '男', '2009-11-20', '低', '2025-06-09 01:31:07', '2025-06-15 16:02:56'),
 (7, 'ggg', '天線寶寶~天線寶寶~說！你！好！', '美國', '紐約', '男', '2040-11-21', '高', '2025-06-09 01:31:08', '2025-06-15 16:04:35'),
 (8, 'hhh', '我要環遊世界!!!', '美國', '其他', '其他', '2025-06-15', '高', '2025-06-09 01:31:09', '2025-06-15 15:32:26'),
-(9, 'iii', '我是誰我在哪', '美國', '紐約', '男', '0000-00-00', '', '2025-06-09 01:31:10', '2025-06-15 15:27:02'),
+(9, 'iii', '我是誰我在哪', '美國', '紐約', '男', '0000-00-00', '', '2025-06-09 01:31:10', '2025-06-15 16:20:41'),
 (10, 'jjj', '赫赫哈ㄏ一ˋ', '', '', '', '0000-00-00', '', '2025-06-09 01:31:11', '2025-06-15 15:19:38');
 
 -- --------------------------------------------------------
@@ -135,7 +143,8 @@ INSERT INTO `redeem_history` (`id`, `user_id`, `reward_id`, `reward_name`, `poin
 (4, 8, 17, '可持續生活工作坊', 350, '2025-06-15 15:31:30'),
 (5, 1, 2, '腳踏車租借券', 100, '2025-06-15 15:55:44'),
 (6, 5, 9, '可持續時尚折扣券', 90, '2025-06-15 16:00:45'),
-(7, 7, 2, '腳踏車租借券', 100, '2025-06-15 16:05:39');
+(7, 7, 2, '腳踏車租借券', 100, '2025-06-15 16:05:39'),
+(8, 9, 9, '可持續時尚折扣券', 90, '2025-06-15 16:20:27');
 
 -- --------------------------------------------------------
 
@@ -223,7 +232,8 @@ INSERT INTO `travel_records` (`id`, `user_id`, `transport`, `distance`, `footpri
 (17, 5, '機車', 4.339, 0.342781, 0, '2025-06-15 16:00:12'),
 (18, 5, '汽車', 57.466, 5.97646, 0, '2025-06-15 16:00:29'),
 (19, 5, '腳踏車', 25.758, 0, 25, '2025-06-15 16:00:33'),
-(20, 7, '腳踏車', 52.091, 0, 52, '2025-06-15 16:03:26');
+(20, 7, '腳踏車', 52.091, 0, 52, '2025-06-15 16:03:26'),
+(21, 9, '步行', 47.8, 0, 95, '2025-06-15 16:20:22');
 
 -- --------------------------------------------------------
 
@@ -316,7 +326,7 @@ ALTER TABLE `users`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `friends`
 --
 ALTER TABLE `friends`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `personal_page`
@@ -328,13 +338,13 @@ ALTER TABLE `personal_page`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `redeem_history`
 --
 ALTER TABLE `redeem_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `travel_records`
 --
 ALTER TABLE `travel_records`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `users`
