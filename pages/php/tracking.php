@@ -11,4 +11,3 @@ return [
     'username' => $_SESSION['username'],
     'error' => null
 ];
-?>

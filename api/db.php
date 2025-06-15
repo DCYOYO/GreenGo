@@ -1,5 +1,6 @@
 <?php
-function getPDO() {
+function getPDO()
+{
     static $pdo = null;
     if ($pdo !== null) {
         return $pdo;
@@ -22,12 +23,13 @@ function getPDO() {
     }
 }
 
-function executeQuery($sql, $params = [], $fetchMode = 'one', $returnType = PDO::FETCH_ASSOC) {
+function executeQuery($sql, $params = [], $fetchMode = 'one', $returnType = PDO::FETCH_ASSOC)
+{
     try {
         $pdo = getPDO();
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
-        
+
         if ($fetchMode === 'one') {
             return $stmt->fetch($returnType) ?: null;
         } elseif ($fetchMode === 'all') {
@@ -42,7 +44,8 @@ function executeQuery($sql, $params = [], $fetchMode = 'one', $returnType = PDO:
     }
 }
 
-function executeNonQuery($sql, $params = []) {
+function executeNonQuery($sql, $params = [])
+{
     try {
         $pdo = getPDO();
         $stmt = $pdo->prepare($sql);
@@ -53,4 +56,3 @@ function executeNonQuery($sql, $params = []) {
         return false;
     }
 }
-?>
