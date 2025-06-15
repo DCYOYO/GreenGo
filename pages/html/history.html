@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,16 +9,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
 </head>
+
 <body class="bg-dark text-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container mt-3">
             <button onclick="location.href='/tracking'" class="btn btn-link text-decoration-none">
                 <h1 class="mb-4 text-success-emphasis fw-bold">
                     <i class="bi bi-leaf" style="color: #a7d49b;text-shadow: 0.1em 0.1em 0.05em #1e211f">Greengo </i>
-            <i class="bi bi-leaf" style="color:rgb(200, 255, 200);font-size:19px;text-shadow: 0.2em 0.2em 0.2em #131514">讓環保充斥在你我生活之間</i>
+                    <i class="bi bi-leaf"
+                        style="color:rgb(200, 255, 200);font-size:19px;text-shadow: 0.2em 0.2em 0.2em #131514">讓環保充斥在你我生活之間</i>
                 </h1>
             </button>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -28,26 +32,35 @@
                     <li class="nav-item"><a class="nav-link" href="/rewards">獎勵</a></li>
                 </ul>
             </div>
-                <form action="/api/backend.php" method="POST" class="fixed-logout d-flex align-items-center shadow-sm rounded-pill px-3 py-1">
-                    <div class="user-avatar rounded-circle me-2 d-flex align-items-center justify-content-center">
-                        <span class="text-white fw-bold"><?php echo safe_output($username[0]); ?></span>
-                    </div>
-                    <span class="me-3 fw-bold">
-                        <ul class="navbar-nav ms-auto mr-4">
-                            <li class="nav-item"><a class="nav-link" href="/personal"><?php echo safe_output($username); ?></a></li>
-                        </ul>
+            <form action="/api/backend.php" method="POST"
+                class="fixed-logout d-flex align-items-center shadow-sm rounded-pill px-3 py-1">
+                <div class="user-avatar rounded-circle me-2 d-flex align-items-center justify-content-center">
+                    <span class="text-white fw-bold">
+                        <?php echo safe_output($username[0]); ?>
                     </span>
-                    <input type="hidden" name="action" value="logout">
-                    <button type="submit" class="btn btn-outline-danger btn-sm">登出</button>
-                </form>
+                </div>
+                <span class="me-3 fw-bold">
+                    <ul class="navbar-nav ms-auto mr-4">
+                        <li class="nav-item"><a class="nav-link" href="/personal">
+                                <?php echo safe_output($username); ?>
+                            </a></li>
+                    </ul>
+                </span>
+                <input type="hidden" name="action" value="logout">
+                <button type="submit" class="btn btn-outline-danger btn-sm">登出</button>
+            </form>
         </div>
     </nav>
     <div class="container py-5 fade-in">
         <div id="history-section" class="card mb-4" style="border-radius: 15px;">
             <div class="card-body" style="border-radius: 15px;">
-                <h5 class="card-title">剩餘點數：<span id="points"><?php echo safe_output($points); ?></span> 點</h5>
+                <h5 class="card-title">剩餘點數：<span id="points">
+                        <?php echo safe_output($points); ?>
+                    </span> 點</h5>
                 <?php if ($error): ?>
-                    <div class="alert alert-danger"><?php echo safe_output($error); ?></div>
+                <div class="alert alert-danger">
+                    <?php echo safe_output($error); ?>
+                </div>
                 <?php endif; ?>
                 <!-- <div class="hist-record-container"><?php echo $records_html; ?></div> -->
                 <!-- 排序選單 -->
@@ -57,17 +70,20 @@
                             <label for="sort" class="form-label text-white">排序依據</label>
                             <select name="sort" id="sort" class="form-select">
                                 <?php foreach ($data['sort_options'] as $value => $label): ?>
-                                    <option value="<?php echo $value; ?>" <?php echo $data['sort_field'] === $value ? 'selected' : ''; ?>>
-                                        <?php echo $label; ?>
-                                    </option>
+                                <option value="<?php echo $value; ?>" <?php echo $data['sort_field']===$value
+                                    ? 'selected' : '' ; ?>>
+                                    <?php echo $label; ?>
+                                </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="col-md-5">
                             <label for="order" class="form-label text-white">排序方向</label>
                             <select name="order" id="order" class="form-select">
-                                <option value="asc" <?php echo $data['sort_order'] === 'asc' ? 'selected' : ''; ?>>升序</option>
-                                <option value="desc" <?php echo $data['sort_order'] === 'desc' ? 'selected' : ''; ?>>降序</option>
+                                <option value="asc" <?php echo $data['sort_order']==='asc' ? 'selected' : '' ; ?>>升序
+                                </option>
+                                <option value="desc" <?php echo $data['sort_order']==='desc' ? 'selected' : '' ; ?>>降序
+                                </option>
                             </select>
                         </div>
                         <div class="col-md-2">
@@ -86,4 +102,5 @@
     <script src="/assets/js/common.js"></script>
     <script src="/assets/js/history.js"></script>
 </body>
+
 </html>
