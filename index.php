@@ -218,11 +218,11 @@ function handle_page_request($path, $pages, $public_pages)
 }
 
 // 路由流程
-$path = clean_path($_SERVER['REQUEST_URI']);
-debug_log("Request path: " . $path);
+$path = clean_path($_SERVER['REQUEST_URI']); // 清理路徑
+debug_log("Request path: " . $path); 
 
-handle_api_request($path);
-handle_page_request($path, $pages, $public_pages);
+handle_api_request($path); // 處理 API 請求
+handle_page_request($path, $pages, $public_pages); // 處理頁面請求
 
 http_response_code(404);
 require_with_check(TEMPLATE_PATH . '404.html', 'template');

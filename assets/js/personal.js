@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const formData = new FormData(avatarForm);
             try {
-                const response = await fetch('/api/backend.php', {
+                const response = await fetch('/api/backend', {
                     method: 'POST',
                     body: formData
                 });
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const formData = new FormData(profileForm);
             try {
-                const response = await fetch('/api/backend.php', {
+                const response = await fetch('/api/backend', {
                     method: 'POST',
                     body: formData
                 });
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add friend
     window.addFriend = function (friendId) {
-        fetch('/api/backend.php', {
+        fetch('/api/backend', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'add_friend', friend_id: friendId, csrf_token: '<?php echo htmlspecialchars($csrf_token); ?>' })
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.deleteFriend = function (friendId) {
         if (!confirm('確定要刪除此好友嗎？')) return;
 
-        fetch('/api/backend.php', {
+        fetch('/api/backend', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'delete_friend', friend_id: friendId, csrf_token: '<?php echo htmlspecialchars($csrf_token); ?>' })
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Respond to friend request
     window.respondFriendRequest = function (requestId, response) {
-        fetch('/api/backend.php', {
+        fetch('/api/backend', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'respond_friend_request', request_id: requestId, response, csrf_token: '<?php echo htmlspecialchars($csrf_token); ?>' })
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     };
     window.respondFriendRequest = function (requestId, response) {
-        fetch('/api/backend.php', {
+        fetch('/api/backend', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'respond_friend_request', request_id: requestId, response, csrf_token: '<?php echo htmlspecialchars($csrf_token); ?>' })
@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     // Check friend status
     function checkFriendStatus(friendId) {
-        fetch('/api/backend.php', {
+        fetch('/api/backend', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'get_friend_status', friend_id: friendId, csrf_token: '<?php echo htmlspecialchars($csrf_token); ?>' })
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const friendsList = document.getElementById('friends-list');
         if (!friendsList) return;
 
-        fetch('/api/backend.php', {
+        fetch('/api/backend', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'get_friends', csrf_token: '<?php echo htmlspecialchars($csrf_token); ?>' })
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const pendingRequests = document.getElementById('pending-requests');
         if (!pendingRequests) return;
 
-        fetch('/api/backend.php', {
+        fetch('/api/backend', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'get_pending_requests', csrf_token: '<?php echo htmlspecialchars($csrf_token); ?>' })
