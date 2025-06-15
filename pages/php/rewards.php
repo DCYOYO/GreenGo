@@ -33,11 +33,11 @@ $count = 1;
 $out = '';
 foreach ($rewards as &$reward) {
     $out .= "<div class='card-body card mb-2'>" .
-            "<h6 class='card-title'>" . htmlspecialchars($reward['name']) . "</h6>" .
-            "<p class='card-text'>需要" . htmlspecialchars($reward['points_required']) . " 點</p>" .
-            "<p class='card-text'>" . htmlspecialchars($reward['description']) . "</p>" .
-            "<button class='btn btn-primary' onclick=\"redeemReward(" . $reward['reward_id'] . ")\">兌換</button>" .
-            "</div>";
+        "<h6 class='card-title'>" . htmlspecialchars($reward['name']) . "</h6>" .
+        "<p class='card-text'>需要" . htmlspecialchars($reward['points_required']) . " 點</p>" .
+        "<p class='card-text'>" . htmlspecialchars($reward['description']) . "</p>" .
+        "<button class='btn btn-primary' onclick=\"redeemReward(" . $reward['reward_id'] . ")\">兌換</button>" .
+        "</div>";
     $count++;
 }
 
@@ -47,4 +47,3 @@ return [
     'username' => $_SESSION['username'],
     'error' => null
 ];
-?>

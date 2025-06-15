@@ -54,28 +54,28 @@ function handleSubmit() {
       points: pointsEarned
     })
   })
-  .then(response => {
-    return response.json();
-  })
-  .then(data => {
-    if (data.status === 'success') {
-      alert(`這次${selectedTransport}移動獲得 ${pointsEarned} 點！`);
-      suggestEcoPath(selectedTransport);
-    } else {
-      alert('儲存資料失敗：' + data.message);
-    }
-  })
-  .catch(error => {
-    alert('無法連接到後端，請檢查伺服器是否運行');
-  });
-  
+    .then(response => {
+      return response.json();
+    })
+    .then(data => {
+      if (data.status === 'success') {
+        alert(`這次${selectedTransport}移動獲得 ${pointsEarned} 點！`);
+        suggestEcoPath(selectedTransport);
+      } else {
+        alert('儲存資料失敗：' + data.message);
+      }
+    })
+    .catch(error => {
+      alert('無法連接到後端，請檢查伺服器是否運行');
+    });
+
   document.getElementById("distance").value = "";
 }
 
 function startTracking() {
-  if (!selectedTransport){
+  if (!selectedTransport) {
     return alert("請先選擇交通方式。");
-  } 
+  }
   positions = [];
   currentDistance = 0;
   currentPoints = 0;
@@ -132,21 +132,21 @@ function stopTracking() {
         points: pointsEarned
       })
     })
-    .then(response => {
-      return response.json();
-    })
-    .then(data => {
-      if (data.status === 'success') {
-        alert(`這次${selectedTransport}移動獲得 ${pointsEarned} 點！`);
-        suggestEcoPath(selectedTransport);
-      } else {
-        alert('儲存資料失敗：' + data.message);
-      }
-    })
-    .catch(error => {
-      alert('無法連接到後端，請檢查伺服器是否運行');
-    });
-    
+      .then(response => {
+        return response.json();
+      })
+      .then(data => {
+        if (data.status === 'success') {
+          alert(`這次${selectedTransport}移動獲得 ${pointsEarned} 點！`);
+          suggestEcoPath(selectedTransport);
+        } else {
+          alert('儲存資料失敗：' + data.message);
+        }
+      })
+      .catch(error => {
+        alert('無法連接到後端，請檢查伺服器是否運行');
+      });
+
     currentDistance = 0;
     currentPoints = 0;
   }
